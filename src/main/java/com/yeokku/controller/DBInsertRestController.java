@@ -3,9 +3,7 @@ package com.yeokku.controller;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 import java.net.URL;
-import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -27,18 +25,21 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.yeokku.model.dao.CityDAO;
 import com.yeokku.model.dao.CountryDAO;
+import com.yeokku.model.dao.PointDAO;
 import com.yeokku.model.dto.City;
 import com.yeokku.model.dto.Country;
+import com.yeokku.model.dto.Point;
 
 @CrossOrigin
 @RestController
-public class HomeRestController {
+public class DBInsertRestController {
 
 	@Autowired
 	CountryDAO countryDao;
 	@Autowired
 	CityDAO cityDao;
-	
+	@Autowired
+	PointDAO pointDao;
 	
 	// 도시 DB 저장
 	@GetMapping("/insertCities")
@@ -147,4 +148,101 @@ public class HomeRestController {
 		//cityDao.insertAllCities(cityList);
 		System.out.println("city insert completed.");
  	}
+	
+	// 관광지 DB저장
+	@GetMapping("/insertPlaces")
+	private void insertPlaces() throws SQLException, IOException {
+		
+		// 1. 도시 리스트 받아오기
+		List<City> cityList = cityDao.selectCityList();
+		
+		System.out.println("selectCityList 결과 : " + cityList.size());
+		
+		// 2. 도시 이름으로 검색한 결과 페이지에서 관광지 이름 크롤링
+		List<Point> pointList = new ArrayList<>();
+		for(City c : cityList) {
+
+			String cityName = c.getCityName();
+			String url = "https://ko.wikipedia.org/wiki/" + URLEncoder.encode("분류", "utf-8") +":"+ URLEncoder.encode(cityName, "utf-8") + URLEncoder.encode("의_관광지", "utf-8");	
+
+			Document doc = null;
+
+			try {
+				doc = Jsoup.connect(url).get();
+			} catch(IOException e) {
+				//e.printStackTrace();
+				continue;
+			}
+			
+			if(doc != null) {
+
+				Elements element = doc.select("div#mw-pages");
+				Elements element2 = element.select("div.mw-content-ltr");
+				Iterator<Element> points = element2.select("li").iterator();
+				
+				System.out.println("===========" + cityName + "===========");
+				
+				while(points.hasNext()) {
+					Element point = points.next();
+					String pointName = point.text();
+					
+					System.out.println(pointName);
+					pointList.add(new Point(pointName, cityName));
+					
+				}	
+			}
+			
+		}
+		
+		System.out.println("관광지 개수 : " + pointList.size());
+		
+		// 3. 구글 지오코딩 API로 관광지의 중심 위도, 중심경도 구해서 세팅 (지도에 표시하기 위함)
+		for(int i = 0; i < pointList.size(); i++) {
+			Point p = pointList.get(i);
+			String address = p.getCityName() + "+" + p.getPointName();
+			
+			address = address.replace(" ", "+");
+			
+			final String SERVICE_KEY = "AIzaSyAmrzwR0Tl9B8SI0dIProLdTJBjWtKilAc";
+			final String urlStr = "https://maps.googleapis.com/maps/api/geocode/json?address=" + address + "&key="
+					+ SERVICE_KEY;
+			
+			try { // json 파싱
+				URL url = new URL(urlStr);
+				String line = "";
+	            String response = "";
+				
+				BufferedReader br;
+	            br = new BufferedReader(new InputStreamReader(url.openStream()));
+	            while ((line = br.readLine()) != null) {
+	            	response = response.concat(line);               
+	            }      
+				
+				JSONParser jsonParse = new JSONParser();
+				JSONObject jsonObj = (JSONObject) jsonParse.parse(response);
+				JSONArray positionArray = (JSONArray) jsonObj.get("results");
+	
+				if(positionArray.size() == 0) continue;
+				
+				JSONObject posObject = ((JSONObject) positionArray.get(0));
+				JSONObject posObject2 = (JSONObject) posObject.get("geometry");
+				JSONObject posObject3 = (JSONObject) posObject2.get("location");
+				
+				double centerLat = (double) posObject3.get("lat");
+				double centerLng = (double) posObject3.get("lng");
+				p.setLat(centerLat);
+				p.setLng(centerLng);
+				
+				System.out.println(address+" : " + centerLat + "," + centerLng);
+				
+			} catch (ParseException e) {
+				e.printStackTrace();
+			}
+				
+
+		}
+
+		//pointDao.insertAllPlaces(pointList);
+		System.out.println("points insert completed.");
+	}
 }

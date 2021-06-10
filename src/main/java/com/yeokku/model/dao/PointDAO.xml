@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+    
+<mapper namespace="com.yeokku.model.dao.PointDAO">
+
+	<resultMap type="Point" id="PointResultMap">
+		<id column="vid" property="pointId"/>
+		<result column="vname" property="pointName"/>
+		<result column="city_id" property="pointName"/>
+		<result column="city_name" property="pointName"/>
+		<result column="img" property="img"/>
+		<result column="descr" property="desc"/>
+		<result column="lat" property="lat"/>
+		<result column="lng" property="lng"/>
+	</resultMap>
+	
+	<insert id="insertAllPlaces" parameterType="Point">
+		insert into point
+			(vname, city_name, lat, lng, img, descr)
+		values
+		<foreach collection="pointList" item="item" separator=",">
+			(
+				#{item.pointName},
+				#{item.cityName},
+				#{item.lat},
+				#{item.lng},
+				"imgpath",
+				#{item.desc}
+			)
+		</foreach>
+	</insert>
+	
+	<select id="selectPointListByCity"  resultMap="PointResultMap">
+		select vid, vname, city_code, city_name,  lat, lat, img, desc
+		from point
+		where city_name = #{cityName};
+	</select>	
+		
+	
+</mapper>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

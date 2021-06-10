@@ -30,7 +30,7 @@
 	</insert>
 	
 	<select id="selectCityList"  resultMap="CityResultMap">
-		select city_name, cnt_code, cnt_name,  center_lat, center_lat
+		select city_id, city_name, cnt_code, cnt_name,  center_lat, center_lat
 		from city;
 	</select>	
 		
