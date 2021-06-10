@@ -141,7 +141,8 @@ public class HomeRestController {
 
 		}
 				
-		cityDao.insertAllCities(cityList);
+		//주석추가
+		//cityDao.insertAllCities(cityList);
 		System.out.println("city insert completed.");
  	}
 }
