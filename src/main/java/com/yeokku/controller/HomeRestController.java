@@ -23,7 +23,10 @@ import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.ModelAndView;
 
 import com.yeokku.model.dao.CityDAO;
 import com.yeokku.model.dao.CountryDAO;
@@ -38,8 +41,7 @@ public class HomeRestController {
 	CountryDAO countryDao;
 	@Autowired
 	CityDAO cityDao;
-	
-	
+
 	// 도시 DB 저장
 	@GetMapping("/insertCities")
 	private void insertCities() throws SQLException, IOException {
