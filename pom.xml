@@ -69,7 +69,11 @@
 		    <version>1.13.1</version>
 		</dependency>
 		
+<<<<<<< HEAD
 		 <!-- https://mvnrepository.com/artifact/org.apache.tomcat.embed/tomcat-embed-jasper -->
+=======
+		<!-- https://mvnrepository.com/artifact/org.apache.tomcat.embed/tomcat-embed-jasper -->
+>>>>>>> branch 'main' of https://github.com/4COLORPENS/YEOKKU-backend.git
       <dependency>
           <groupId>org.apache.tomcat.embed</groupId>
           <artifactId>tomcat-embed-jasper</artifactId>
