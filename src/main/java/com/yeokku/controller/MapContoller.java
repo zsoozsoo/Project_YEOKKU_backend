@@ -20,7 +20,6 @@ import net.sf.json.JSONArray;
 @RestController
 @RequestMapping("/map")
 @CrossOrigin("*")
-
 public class MapContoller {
 	// 임시로 지도 표시
 	
