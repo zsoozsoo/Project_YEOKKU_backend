@@ -18,6 +18,16 @@
 		from country;
 	</select>	
 		
+	<select id="selectContinentList"  resultMap="CountryResultMap">
+		select distinct cntn_name
+		from country;
+	</select>	
+	
+	<select id="selectCountryListByCont"  resultMap="CountryResultMap" parameterType="string">
+		select cnt_code, cnt_name, cntn_name, istravel
+		from country
+		where cntn_name = #{contName};
+	</select>	
 	
 </mapper>
 

@@ -12,4 +12,8 @@ public interface CountryDAO {
 
 	public List<Country> selectCountryList();
 
+	public List<Country> selectContinentList();
+
+	public List<Country> selectCountryListByCont(String cont);
+
 }
