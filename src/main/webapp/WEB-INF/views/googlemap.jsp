@@ -5,9 +5,6 @@
 <head>
 <meta charset="UTF-8">
 <title>google map</title>
-<!-- Bootstrap core JS-->
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js"></script>
 <style>
   #map {
     height: 100%;
@@ -18,90 +15,24 @@
     padding: 0;
   }
 </style>
-
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 </head>
 <body>
-
-
-	<div class="">
-		<select>
-			<option>대륙</option>
-		</select>
-		<select>
-			<option>국가</option>
-		</select>
-		<select>
-			<option>도시</option>
-		</select>
+<button class="sendBtn">SEND</button>
+<div id="map"></div>
 	
-	</div>
-	
-
-	<div id="map"></div> 
-	
-
-	
-	<div  class="">
-		<div>		
-			<h3>선택한 관광지</h3>
-			
-		</div>
-	
-		<div>
-			 <input type="radio" id="round" value="round" name="roundoroneway"/>순환
-			 <input type="radio" id="oneway" value="oneway" name="roundoroneway"/>비순환
-			 
-			 <button>경로찾기</button>
-		</div>
-	
-	</div>
-
-
-	
-<script async
-  src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDyU_VZ_a8MeeSamxk8c0IgaUaZXaTUPnk&callback=initMap">
-</script>
-	<script>
-	//서버로 도시 보냄
- 		$.ajax({
-		    url:'/places/request_places', 
-		    type:'post',
-		    data:{'cityName':'아테네'}, 
-		    success: function(result) {
-		    	
-		    	var positions = new Array();
-				$.each(result, function(index, value){
-					var data = new Object();
-					
-					data.title = value.title;
-					data.desc = value.desc;
-					data.lat = value.lat;
-					data.lng = value.lng;
-
-					positions.push(data);
-					
-				});
-				
-				console.log(positions);
-		    },
-		    error: function(err) {
-		       console.log(err);
-		    } 
-		});
-
+	<script async
+	  src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDyU_VZ_a8MeeSamxk8c0IgaUaZXaTUPnk&callback=initMap">
 	</script>
+	
 	<script type="text/javascript">
 	let map;
-	function initMap() {
-		
-		//도시 선택하면 ajax로 중심 위도, 경도랑 관광지 정보 받아서 뿌림 
- 		map = new google.maps.Map(document.getElementById('map'), {
+/* 	function initMap() {
+		map = new google.maps.Map(document.getElementById('map'), {
 			  center: {lat: 37.501783, lng: 127.039660}, 
 			  zoom: 15
 			});
-		
-		
-		new google.maps.Marker(
+		 new google.maps.Marker(
 					{
 						position: {lat : 37.5012743, lng : 127.039585},
 						map: map
@@ -110,8 +41,92 @@
 					{
 						position: {lat : 37.5012743, lng : 127.049585},
 						map: map
-					});
-	} 
+					}); 
+					
+			 map.addListener('click', function(event) {  
+				    addMarker(event.latLng);  
+				  }); 
+					
+		 var marker = new google.maps.Marker({
+		        position: location, 
+		        map: map
+		    });
+		    
+		    console.log(marker.position);
+
+		    
+	}
+	 */
+	 
+	 var markers = [];
+	 var locations = [];
+	  
+	 function initMap() {  
+	   
+		 var lat_lng = {lat: 37.501783, lng: 127.039660};  
+		 
+	   map = new google.maps.Map(document.getElementById('map'), {  
+		   center: lat_lng,  
+			  zoom: 15
+	   });  
+	   
+	   // This event listener will call addMarker() when the map is clicked.  
+	   map.addListener('click', function(event) {  
+	     addMarker(event.latLng);  
+	   });  
+	   
+	   // Adds a marker at the center of the map.  
+	   addMarker(lat_lng); 
+	   
+	 }  
+	   
+	 // Adds a marker to the map and push to the array.  
+	 function addMarker(location) {  
+	    var marker = new google.maps.Marker({  
+	    	position : location,
+	     	map: map  
+	   });
+	    
+	   var mPosition = {
+			   lat : marker.getPosition().lat(),
+			   lng : marker.getPosition().lng()
+	   }
+	   markers.push(mPosition);  
+	   
+	  const infowindow = new google.maps.InfoWindow({
+		    content: "<p>Marker Location:" + marker.getPosition()+ "</p>",
+		  });
+	   
+		  google.maps.event.addListener(marker, "click", () => {
+		    infowindow.open(map, marker);
+		  });
+		  
+	 }  
+
+	 $('.sendBtn').click(function(){
+		getLocation();
+	 });
+	 
+	function getLocation(){
+		console.log(markers);
+
+		$.ajax({
+			url:"/yeokku/map/getLocation",
+			dataType:"json",
+			type:"POST",
+			traditional: true,
+			data : {
+				data : JSON.stringify(markers)
+			},
+			success : function(data){
+			console.log('성공');
+			},
+			error : function(data){
+				console.log('오류');
+			}
+		});
+	}
+	
 	</script>  	
 
 </body>

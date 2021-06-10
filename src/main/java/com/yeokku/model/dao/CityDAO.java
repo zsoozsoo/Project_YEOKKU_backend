@@ -14,4 +14,5 @@ public interface CityDAO {
 
 	public void insertAllCities(List<City> cityList);
 	public List<City> selectCityList();
+	public List<City> selectCityListByCountry(String country);
 }
