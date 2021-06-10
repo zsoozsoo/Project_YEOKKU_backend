@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+    
+<mapper namespace="com.yeokku.model.dao.CityDAO">
+
+	<resultMap type="City" id="CityResultMap">
+		<id column="cnt_code" property="countryCode"/>
+		<result column="cnt_name" property="countryName"/>
+		<result column="city_name" property="cityName"/>
+		<result column="center_lat" property="centerLat"/>
+		<result column="center_lng" property="centerLng"/>
+	</resultMap>
+	
+	<insert id="insertAllCities" parameterType="City">
+		insert into city 
+			(city_name, cnt_code, cnt_name, center_lat, center_lng)
+		values
+		<foreach collection="cityList" item="item" separator=",">
+			(
+				#{item.cityName},
+				#{item.countryCode},
+				#{item.countryName},
+				#{item.centerLat},
+				#{item.centerLng}
+			)
+		</foreach>
+	</insert>
+	
+	<select id="selectCityList"  resultMap="CityResultMap">
+		select city_name, cnt_code, cnt_name,  center_lat, center_lat
+		from city;
+	</select>	
+		
+	
+</mapper>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
