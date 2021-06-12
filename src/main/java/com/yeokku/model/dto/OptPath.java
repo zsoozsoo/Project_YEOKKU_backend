@@ -9,17 +9,19 @@ public class OptPath {
 	private String selectedMinCost; // 선택한 기준의 총 비용
 	private String anotherMinCost; // 다른 기준의 총 비용
 	private String mode; // 선택한 이동모드 (자동차 or 자전거 or 도보)
+	private List<DetailDirection> detailDirections;
 	
 	public OptPath() {}
 	
 	public OptPath(String selectCriteria, List<Point> pointsInOrder, String selectedMinCost,
-			String anotherMinCost, String mode) {
+			String anotherMinCost, String mode, List<DetailDirection> detailDirections) {
 		super();
 		this.selectCriteria = selectCriteria;	
 		this.pointsInOrder = pointsInOrder;
 		this.selectedMinCost = selectedMinCost;
 		this.anotherMinCost = anotherMinCost;
 		this.mode = mode;
+		this.detailDirections = detailDirections;
 	}
 
 	public String getSelectCriteria() {
@@ -61,7 +63,13 @@ public class OptPath {
 	public void setMode(String mode) {
 		this.mode = mode;
 	}
-	
-	
+
+	public List<DetailDirection> getDetailDirections() {
+		return detailDirections;
+	}
+
+	public void setDetailDirections(List<DetailDirection> detailDirections) {
+		this.detailDirections = detailDirections;
+	}
 	
 }
