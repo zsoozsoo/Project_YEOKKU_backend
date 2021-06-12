@@ -26,6 +26,14 @@ public class Point {
 		this.lng = lng;
 	}
 
+	public Point(String pointName, String cityName, double lat, double lng) {
+		super();
+		this.pointName = pointName;
+		this.cityName = cityName;
+		this.lat = lat;
+		this.lng = lng;
+	}
+
 	public int getPointId() {
 		return pointId;
 	}

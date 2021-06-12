@@ -19,6 +19,7 @@
 </head>
 <body>
 <button class="sendBtn">SEND</button>
+<a href="/yeokku/optpath_oneway/driving">oneway</a>
 <div id="map"></div>
 	
 	<script async
