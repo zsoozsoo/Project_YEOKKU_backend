@@ -170,7 +170,22 @@ public class OptimalPathController {
         
 		System.out.println("min cost2: " + minCost2);
 		
-		OptPath optPath = new OptPath(type, output, minCost, minCost2, mode);
+		OptPath optPath = null;
+		// 단위변환
+		if(type.equals("distance")) {
+			double distance = minCost/1000;
+			int hour = minCost2 / 3600;
+			int min = (minCost2%3600)/60;
+			
+			optPath = new OptPath(type, output, distance+"km", hour+"h "+min+"min", mode);
+			
+		} else {
+			int hour = minCost / 3600;
+			int min = (minCost%3600)/60;
+			double distance = minCost2/1000;
+			
+			optPath = new OptPath(type, output, hour+"h "+min+"min", distance+"km", mode);
+		}
 		
 		return optPath;
 	}
