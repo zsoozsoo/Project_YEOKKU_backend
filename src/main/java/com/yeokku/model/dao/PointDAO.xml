@@ -32,7 +32,10 @@
 			)
 		</foreach>
 	</insert>
-	
+	<select id="selectPointList"  resultMap="PointResultMap" parameterType="string">
+		select vid, vname, city_id, city_name,  lat, lng, img, descr
+		from point;
+	</select>
 	<select id="selectPointListByCity"  resultMap="PointResultMap" parameterType="string">
 		select vid, vname, city_id, city_name,  lat, lng, img, descr
 		from point

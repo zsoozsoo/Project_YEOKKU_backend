@@ -12,5 +12,7 @@ import com.yeokku.model.dto.Point;
 public interface PointDAO {
 	
 	public void insertAllPlaces(List<Point> pointList);
+	public List<Point> selectPointList();
 	public List<Point> selectPointListByCity(String cityId);
+	public void updatePointList(List<Point> pointList);
 }

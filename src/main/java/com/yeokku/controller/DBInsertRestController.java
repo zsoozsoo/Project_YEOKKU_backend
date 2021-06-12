@@ -111,7 +111,7 @@ public class DBInsertRestController {
 			String address = c.getCountryName()+"+"+c.getCityName();
 			address = address.replace(" ", "+");
 			
-			final String SERVICE_KEY = "AIzaSyAmrzwR0Tl9B8SI0dIProLdTJBjWtKilAc";
+			final String SERVICE_KEY = "AIzaSyAmrzwR0Tl9B8SI0dIProLdTJBjWtKilAc이부분지워주세요";
 			final String urlStr = "https://maps.googleapis.com/maps/api/geocode/json?address=" + address + "&key="
 					+ SERVICE_KEY;
 			
@@ -200,14 +200,15 @@ public class DBInsertRestController {
 		
 		System.out.println("관광지 개수 : " + pointList.size());
 		
-		// 3. 구글 지오코딩 API로 관광지의 중심 위도, 중심경도 구해서 세팅 (지도에 표시하기 위함)
 		for(int i = 0; i < pointList.size(); i++) {
+			
+			// 3. 구글 지오코딩 API로 관광지의 중심 위도, 중심경도 구해서 세팅 (지도에 표시하기 위함)
 			Point p = pointList.get(i);
 			String address = p.getCityName() + "+" + p.getPointName();
 			
 			address = address.replace(" ", "+");
 			
-			final String SERVICE_KEY = "AIzaSyAmrzwR0Tl9B8SI0dIProLdTJBjWtKilAc";
+			final String SERVICE_KEY = "AIzaSyAmrzwR0Tl9B8SI0dIProLdTJBjWtKilAc이부분지워주세요";
 			final String urlStr = "https://maps.googleapis.com/maps/api/geocode/json?address=" + address + "&key="
 					+ SERVICE_KEY;
 			
@@ -242,11 +243,40 @@ public class DBInsertRestController {
 			} catch (ParseException e) {
 				e.printStackTrace();
 			}
-				
+			
+			
+			// 4. 상세정보
+			
+			String pName = p.getPointName();
+			pName = pName.replace(" ", "_");
+			
+			String url = "https://ko.wikipedia.org/wiki/" + URLEncoder.encode(pName, "utf-8");	
+
+			Document doc = null;
+
+			try {
+				doc = Jsoup.connect(url).get();
+			} catch(IOException e) {
+				//e.printStackTrace();
+				continue;
+			}
+			String desc = null;
+			if(doc != null) {
+
+				Elements element = doc.select("div.mw-parser-output");
+				Element element2 = element.select("p").first();
+				if(element2 != null )desc = element2.text();
+				System.out.println(pName);
+				System.out.println(desc);
+			}
+			
+			
+			p.setDesc(desc);
 
 		}
 
-		//pointDao.insertAllPlaces(pointList);
-		System.out.println("points insert completed.");
+//		pointDao.insertAllPlaces(pointList);
+//		System.out.println("points insert completed.");
 	}
+	
 }
