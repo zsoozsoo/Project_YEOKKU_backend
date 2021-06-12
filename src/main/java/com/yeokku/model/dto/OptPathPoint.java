@@ -32,7 +32,6 @@ public class OptPathPoint {
 	}
 
 
-
 	public long getLegsDistance() {
 		return legsDistance;
 	}
