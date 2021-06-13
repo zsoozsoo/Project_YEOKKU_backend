@@ -60,6 +60,7 @@ public class OptimalPathController {
 		return optPathList;
 	}
 
+	//상세정보 응답
 	@PostMapping("/path_detail")
 	private List<DetailDirection> path_detail(@RequestBody OptPath optpath) throws IOException {
 
