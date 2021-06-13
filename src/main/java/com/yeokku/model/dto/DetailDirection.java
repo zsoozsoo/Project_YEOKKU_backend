@@ -1,23 +1,29 @@
 package com.yeokku.model.dto;
 
+import java.util.List;
+
 public class DetailDirection {
 
 	private Point startPoint;
 	private Point endPoint;
 	private String totalDistance;
 	private String totalDuration;
-	private String instuction;
+	private List<Step> instuctionList;
+	private String message;
+	private String polyline;
 	
 	public DetailDirection() {}
 	
 	public DetailDirection(Point startPoint, Point endPoint, String totalDistance, String totalDuration,
-			String instuction) {
+			List<Step> instuctionList, String message, String polyline) {
 		super();
 		this.startPoint = startPoint;
 		this.endPoint = endPoint;
 		this.totalDistance = totalDistance;
 		this.totalDuration = totalDuration;
-		this.instuction = instuction;
+		this.instuctionList = instuctionList;
+		this.message = message;
+		this.polyline = polyline;
 	}
 
 	public Point getStartPoint() {
@@ -52,12 +58,28 @@ public class DetailDirection {
 		this.totalDuration = totalDuration;
 	}
 
-	public String getDescription() {
-		return instuction;
+	public List<Step> getInstuctionList() {
+		return instuctionList;
 	}
 
-	public void setDescription(String instuction) {
-		this.instuction = instuction;
+	public void setInstuctionList(List<Step> instuctionList) {
+		this.instuctionList = instuctionList;
+	}
+
+	public String getMessage() {
+		return message;
+	}
+
+	public void setMessage(String message) {
+		this.message = message;
+	}
+
+	public String getPolyline() {
+		return polyline;
+	}
+
+	public void setPolyline(String polyline) {
+		this.polyline = polyline;
 	}
 	
 }
