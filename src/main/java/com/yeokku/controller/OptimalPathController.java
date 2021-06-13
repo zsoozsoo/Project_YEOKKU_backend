@@ -482,7 +482,7 @@ public class OptimalPathController {
 				+ "&origin=" +"48.210689892087174,16.342334747314453"+ "&destination=" + "48.112703644255404,16.575279235839844"
 				+ "&waypoints=optimize:true|"+"48.16660063766699,16.400184631347656|"
 				+ "48.18428667226263,16.38885498046875|"+"48.19149670238506,16.38087272644043"
-				+ "&mode" + "bicycling"
+				+ "&mode" + mode
 				+ "&key=" + SERVICE_KEY;
 		System.out.println(urlStr);
 
@@ -491,6 +491,7 @@ public class OptimalPathController {
 			URL url = new URL(urlStr);
 			String line = "";
 			String response = "";
+			String msg = "";
 
 			BufferedReader br;
 			br = new BufferedReader(new InputStreamReader(url.openStream()));
@@ -502,12 +503,17 @@ public class OptimalPathController {
 			JSONObject jsonObj = (JSONObject) jsonParse.parse(response);
 			JSONArray routesArray = (JSONArray) jsonObj.get("routes");
 			
+			if(mode.equals("transit") && routesArray.size()==0) msg = "정보가 없습니다. 도보나 운전 정보를 불러옵니다." ;
+				
 			// 여러 경로 for문으로 돌리기
 			JSONObject subJsonObject = (JSONObject) routesArray.get(0);
 			JSONArray legsArray = (JSONArray) subJsonObject.get("legs");
 			
 			//시작점, 종점, 경유지 포함한 모든 지점 리스트
-			List<OptPathPoint> wayList = new ArrayList<OptPathPoint>();
+			List<Point> pointsInOrder = new ArrayList<Point>();
+			
+			//총 걸리는 거리와 시간 더해주기
+			long totalDistance = 0, totalDuration = 0;
 			
 			for (int i = 0; i < legsArray.size(); i++) {
 				JSONObject legsObject = ((JSONObject) legsArray.get(i));
@@ -515,28 +521,41 @@ public class OptimalPathController {
 				// -------------------- 시작점,끝점 정보 --------------------
 				Point point = new Point();
 				
-				//총 거리 ( m )
+				//지점 간 거리
 				JSONObject distanceObject = (JSONObject) legsObject.get("distance");
 				long legDistance = (long) distanceObject.get("value");
-				//총 시간 ( 초 ) 
+				//총 거리에 더해주기
+				totalDistance += legDistance;
+				
+				//지점 간 걸리는 시간
 				JSONObject durationObject = (JSONObject) legsObject.get("duration");
 				long legDuration = (long) durationObject.get("value");
+				//총 걸리는 시간에 더해주기
+				totalDuration += legDuration;
+				
 				//시작점 이름
 				String startName = (String) legsObject.get("start_address");
+				String[] split = startName.split(",");
+				String startCityName = split[2];
 				//시작점 위도,경도
 				JSONObject startObject = (JSONObject) legsObject.get("start_location");
 				Double startLat = (Double) startObject.get("lat");
 				Double startLng = (Double) startObject.get("lng");
 				//끝점 이름
 				String endName = (String) legsObject.get("end_address");
+				String[] split2 = endName.split(",");
+				String endCityName = split[2];
 				//끝점 위도,경도
 				JSONObject endObject = (JSONObject) legsObject.get("end_location");
 				Double endLat = (Double) endObject.get("lat");
 				Double endLng = (Double) endObject.get("lng");
 				
 				//시작점, 종점, 경유지 포함한 모든 지점 리스트에 정보 넣기
-				//지점간 거리, 지점간 시간, 시작점 이름, 시작점 위도, 시작점 경도, 끝점 이름, 끝점 위도, 끝점 경도
-				wayList.add(new OptPathPoint(legDistance,legDuration,startName,startLat,startLng,endName,endLat,endLng));
+				
+				//처음 시작점만 시작점이랑 끝점 둘 다 넣기
+				if(i==0) pointsInOrder.add(new Point(startName,startCityName,startLat,startLng));
+				//보통은 끝점만 넣기
+				pointsInOrder.add(new Point(endName,endCityName,endLat,endLng));
 				
 			}
 			
@@ -552,26 +571,11 @@ public class OptimalPathController {
 			}
 			System.out.println();
 			
-			long totalDistance = 0, totalDuration = 0; //최종 시간이랑 정보 보여줄 변수
-			
-			// -------------------- 최적경로 각 지점 정보 --------------------
-			int idx = 1;
-			for (int i = 0; i < wayList.size(); i++) {
-				//리스트의 첫번째 인덱스는 시작점과 끝점 모두 출력
-				if(i==0) {
-					System.out.println(idx++ +"번째 방문지");
-					System.out.println("방문지 이름 "+wayList.get(i).getStartName()+" 방문지 경도,위도 "+wayList.get(i).getStartLat()+","+wayList.get(i).getStartLng());
-				}
-				
-				//그 뒤부터는 끝점만 출력
-				System.out.println(idx++ +"번째 방문지");
-				System.out.println("방문지 이름 "+wayList.get(i).getEndName()+" 방문지 경도,위도 "+wayList.get(i).getEndLat()+","+wayList.get(i).getEndLng());
-				
-				totalDistance += wayList.get(i).getLegsDistance();
-				totalDuration += wayList.get(i).getLegsDuration();
-			}
-			
-			System.out.println("최적경로의 총 소요거리는 "+totalDistance/1000+"km, 총 소요시간은 "+totalDuration/60+"분");
+			// ------------------- 경로 관련 모든 정보 보내주기 --------------------
+			// 순서대로 저장된 관광지 리스트, 총 거리, 총 시간, 선택한 이동모드, 메세지
+			OptPath optPath = new OptPath(pointsInOrder,Long.toString(totalDistance),Long.toString(totalDuration),mode,msg);
+//			System.out.println(optPath.toString());
+		
 		}catch (Exception e) {
 			e.printStackTrace();
 		}
