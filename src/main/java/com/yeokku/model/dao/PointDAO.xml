@@ -7,14 +7,15 @@
 <mapper namespace="com.yeokku.model.dao.PointDAO">
 
 	<resultMap type="Point" id="PointResultMap">
-		<id column="vid" property="pointId"/>
-		<result column="vname" property="pointName"/>
+		<id column="pid" property="pointId"/>
+		<result column="pname" property="pointName"/>
 		<result column="city_id" property="cityId"/>
 		<result column="city_name" property="cityName"/>
 		<result column="img" property="img"/>
 		<result column="descr" property="desc"/>
 		<result column="lat" property="lat"/>
 		<result column="lng" property="lng"/>
+		<result column="country_name" property="countryName"/>
 	</resultMap>
 	
 	<insert id="insertAllPlaces" parameterType="Point">
@@ -33,11 +34,11 @@
 		</foreach>
 	</insert>
 	<select id="selectPointList"  resultMap="PointResultMap" parameterType="string">
-		select vid, vname, city_id, city_name,  lat, lng, img, descr
+		select pid, pname, city_id, city_name,  lat, lng, img, descr, country_name
 		from point;
 	</select>
 	<select id="selectPointListByCity"  resultMap="PointResultMap" parameterType="string">
-		select vid, vname, city_id, city_name,  lat, lng, img, descr
+		select pid, pname, city_id, city_name,  lat, lng, img, descr, country_name
 		from point
 		where city_name = #{cityName};
 	</select>		

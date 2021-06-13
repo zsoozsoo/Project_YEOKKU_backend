@@ -400,7 +400,7 @@ public class OptimalPathController {
 			int min = (minCost % 3600) / 60;
 			double distance = minCost2 / 1000;
 
-			optPath = new OptPath(type, output, hour + "h " + min + "min", distance + "km", mode, message);
+			optPath = new OptPath(type, output,  distance + "km",hour + "h " + min + "min", mode, message);
 		}
 
 		return optPath;

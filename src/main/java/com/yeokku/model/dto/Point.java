@@ -10,7 +10,7 @@ public class Point {
 	private String img;
 	private double lat;
 	private double lng;
-	
+	private String countryName;
 	
 	public Point() {}
 	
@@ -32,6 +32,13 @@ public class Point {
 		this.cityName = cityName;
 		this.lat = lat;
 		this.lng = lng;
+	}
+	
+
+	public Point(int pointId, String countryName) {
+		super();
+		this.pointId = pointId;
+		this.countryName = countryName;
 	}
 
 	public int getPointId() {
@@ -85,6 +92,14 @@ public class Point {
 
 	public void setCityName(String cityName) {
 		this.cityName = cityName;
+	}
+
+	public String getCountryName() {
+		return countryName;
+	}
+
+	public void setCountryName(String countryName) {
+		this.countryName = countryName;
 	}
 		
 
