@@ -73,37 +73,18 @@ public class OptimalPathController {
 
 		for (int i = 0; i < path.size() - 1; i++) {
 			String message = null;
-			System.out.println(i + "번째:" +  i);
-
-			int currIndex = i;
+//			System.out.println(i + "번째:" +  i);
 			Point curr =  path.get(i);
-			int nextIndex = -1;
 			Point next = null;
 
-			if (i == path.size() - 1) {
-				nextIndex = 0;
-				next =  path.get(0);
-			} else {
-				nextIndex = i + 1;
-				next =  path.get(i+1);
-			}
-
-//				output.add(curr);
+			if (i == path.size() - 1) next =  path.get(0);
+			else next =  path.get(i+1);
 
 			// google direction api 로 상세정보
 			final String SERVICE_KEY = "AIzaSyC6HRafHB4tQDc-GSCPbwTnybYJLNybxDw";
-			String urlStr = null;
-
-//			if (noTransitPath[currIndex][nextIndex]) { // 이 구간에 대중교통 경로가 없어 자동차 경로로 대체한 경우
-				
-				
-
-//			} else { // 사용자의 선호 이동방법을 그대로 적용한 경우
-//				System.out.println(currIndex + " 에서 " + nextIndex + " 정상 경로");
-				urlStr = "https://maps.googleapis.com/maps/api/directions/json?language=ko&mode=" + mode + "&origin="
+			String urlStr = "https://maps.googleapis.com/maps/api/directions/json?language=ko&mode=" + mode + "&origin="
 						+ curr.getLat() + "," + curr.getLng() + "&destination=" + next.getLat() + "," + next.getLng()
 						+ "&key=" + SERVICE_KEY;
-//			}
 
 			try { // json 파싱
 				URL url = new URL(urlStr);
@@ -112,22 +93,20 @@ public class OptimalPathController {
 
 				BufferedReader br;
 				br = new BufferedReader(new InputStreamReader(url.openStream()));
-				while ((line = br.readLine()) != null) {
-					response = response.concat(line);
-				}
-
+				while ((line = br.readLine()) != null) response = response.concat(line);
+				
 				JSONParser jsonParse = new JSONParser();
 				JSONObject jsonObj = (JSONObject) jsonParse.parse(response);
 				String status = (String) jsonObj.get("status");
-				if (!status.equals("OK")) {
-//					System.out.println("경로가 존재하지 않습니다.");
+				
+				if (!status.equals("OK")) { // 대중교통인 경우 길찾기 정보가 없을 수 있음 => 자동차 모드로 찾되, 이를 명시해야 함.
+					System.out.println("대중교통 정보가 존재하지 않아 자동차 경로로 탐색함.");
 					message = "대중교통정보가 존재하지 않아 자동차경로가 적용된 구간입니다.";
-					
-					System.out.println(currIndex + " 에서 " + nextIndex + " 대체 경로");
 					urlStr = "https://maps.googleapis.com/maps/api/directions/json?language=ko&mode=driving" + "&origin="
 							+ curr.getLat() + "," + curr.getLng() + "&destination=" + next.getLat() + "," + next.getLng()
 							+ "&key=" + SERVICE_KEY;
-					try { // json 파싱
+					
+					try { 
 						url = new URL(urlStr);
 						line = "";
 						response = "";
@@ -141,12 +120,17 @@ public class OptimalPathController {
 						jsonObj = (JSONObject) jsonParse.parse(response);
 					    status = (String) jsonObj.get("status");
 					    
+					    if (!status.equals("OK")) {
+					    	System.out.println("자동차 경로도 존재하지 않음.");
+//					    	throw new Exception("경로존재하지않음예외발생.");
+					    }
+					    
 					} catch (ParseException e) {
 						e.printStackTrace();
 						continue;
 					}
-//					continue;
 				}
+				
 				JSONArray routes = (JSONArray) jsonObj.get("routes");
 				JSONObject route = ((JSONObject) routes.get(0));
 				String polyline  = (String) ((JSONObject) route.get("overview_polyline")).get("points");
@@ -156,46 +140,53 @@ public class OptimalPathController {
 				String totalDistanceStr =  (String) ((JSONObject) leg.get("distance")).get("text");
 				String totalDurationStr = (String) ((JSONObject) leg.get("duration")).get("text");
 
+				// == DRIVING. WALKING 인 경우는 구간별 거리.시간만 얻음
+				
+				// == TRANSIT은 step 별 html_instructions 얻음
 				List<Step> instructionList = new ArrayList<>();
-				if (mode.equals("transit")) { // 대중교통일 경우만 instruction 추가
+				
+				if (mode.equals("transit")) {		
 					JSONArray steps = (JSONArray) leg.get("steps");
 					int size = steps.size();
 					for (int j = 0; j < size; j++) {
-						JSONObject step = (JSONObject) steps.get(j);
-						
-						String step_distance = (String) ((JSONObject) step.get("distance")).get("text");
-						String step_durtaion = (String) ((JSONObject) step.get("duration")).get("text");
+						JSONObject step = (JSONObject) steps.get(j);					
 						String step_mode = (String) step.get("travel_mode");
-						String step_instruction = (String) step.get("html_instructions");
-						Step s = new Step(step_distance,step_durtaion,step_mode,step_instruction);
 						
-						JSONArray steps_detail = (JSONArray) step.get("steps");
-						
-						if(steps_detail != null) {
-							List<Step> detailStepList = new ArrayList<>();
-							int size_detail = steps_detail.size();
-							for (int k = 0; k < size_detail; k++) {
-								
-								JSONObject step_detail = (JSONObject) steps_detail.get(k);
+						 if(step_mode.equals("TRANSIT")) {
+							 
+							String step_distance = (String) ((JSONObject) step.get("distance")).get("text");
+							String step_durtaion = (String) ((JSONObject) step.get("duration")).get("text");
+							String step_instruction = (String) step.get("html_instructions");
 
-								String step_distance_detail = (String) ((JSONObject) step_detail.get("distance")).get("text");
-								String step_durtaion_detail = (String) ((JSONObject) step_detail.get("duration")).get("text");
-								String step_mode_detail = (String) step_detail.get("travel_mode");
-								String step_mode_instruction = (String) step_detail.get("html_instructions");
-								
-								Step sd = new Step(step_distance_detail,step_durtaion_detail,step_mode_detail,step_mode_instruction);
-								
-								detailStepList.add(sd);
-							}	
-						}
-						
-						instructionList.add(s);
-						
-
+							List<Step> detailStepList = null;
+							JSONArray steps_detail = (JSONArray) step.get("steps");
+							
+							if(steps_detail != null) {
+								detailStepList = new ArrayList<>();
+								int size_detail = steps_detail.size();
+								for (int k = 0; k < size_detail; k++) {
+									
+									JSONObject step_detail = (JSONObject) steps_detail.get(k);
+									
+									String step_distance_detail = (String) ((JSONObject) step_detail.get("distance")).get("text");
+									String step_durtaion_detail = (String) ((JSONObject) step_detail.get("duration")).get("text");
+									String step_mode_detail = (String) step_detail.get("travel_mode");
+									String step_mode_instruction = (String) step_detail.get("html_instructions");
+									
+									Step sd = new Step(step_distance_detail,step_durtaion_detail,step_mode_detail,step_mode_instruction);
+									
+									detailStepList.add(sd);
+								}	
+							}
+							
+							Step s = new Step(step_distance,step_durtaion,step_mode,step_instruction);
+							s.setDetailStepList(detailStepList);
+							instructionList.add(s);
+						}		
 					}
 				}
-//				if (instruction == null)
-//					instruction = "대중교통 경로가 없습니다.";
+				
+				// 한 개의 구간에 대한 상세정보 입력
 				DetailDirection detailDirection = new DetailDirection(curr, next, totalDistanceStr, totalDurationStr,
 						instructionList, message, polyline);
 				detailDirectionList.add(detailDirection);
@@ -204,14 +195,14 @@ public class OptimalPathController {
 				e.printStackTrace();
 				continue;
 			}
-		}
+		} //for문 종료
 
 		// 테스트 출력
-		System.out.println("type: " + type);
-		for (int j = 0; j < detailDirectionList.size(); j++) {
-			System.out.println("구간 [" + (j + 1) + "] 이동거리: " + detailDirectionList.get(j).getTotalDistance()
-					+ ", 소요시간: " + detailDirectionList.get(j).getTotalDuration());
-		}
+//		System.out.println("type: " + type);
+//		for (int j = 0; j < detailDirectionList.size(); j++) {
+//			System.out.println("구간 [" + (j + 1) + "] 이동거리: " + detailDirectionList.get(j).getTotalDistance()
+//					+ ", 소요시간: " + detailDirectionList.get(j).getTotalDuration());
+//		}
 		
 		return detailDirectionList;
 	}
