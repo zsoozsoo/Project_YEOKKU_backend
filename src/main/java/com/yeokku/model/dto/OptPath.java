@@ -6,21 +6,31 @@ public class OptPath {
 
 	private String selectCriteria; // 선택한 기준 (거리 or 시간)
 	private List<Point> pointsInOrder; // 순서대로 저장된 관광지
-	private String selectedMinCost; // 선택한 기준의 총 비용
-	private String anotherMinCost; // 다른 기준의 총 비용
+	private String minDistance; // 해당 경로의 총 거리
+	private String minDuration; // 해당 경로의 총 시간
 	private String mode; // 선택한 이동모드 (자동차 or 자전거 or 도보)
 	private String message; // 대체경로 여부
 	private List<DetailDirection> detailDirections;
 	
 	public OptPath() {}
 	
-	public OptPath(String selectCriteria, List<Point> pointsInOrder, String selectedMinCost,
-			String anotherMinCost, String mode, String message) {
+	public OptPath(List<Point> pointsInOrder, String minDistance, String minDuration, String mode,
+			String message) {
+		super();
+		this.pointsInOrder = pointsInOrder;
+		this.minDistance = minDistance;
+		this.minDuration = minDuration;
+		this.mode = mode;
+		this.message = message;
+	}
+
+	public OptPath(String selectCriteria, List<Point> pointsInOrder, String minDistance,
+			String minDuration, String mode, String message) {
 		super();
 		this.selectCriteria = selectCriteria;	
 		this.pointsInOrder = pointsInOrder;
-		this.selectedMinCost = selectedMinCost;
-		this.anotherMinCost = anotherMinCost;
+		this.minDistance = minDistance;
+		this.minDuration = minDuration;
 		this.mode = mode;
 		this.message = message;
 	}
@@ -41,20 +51,20 @@ public class OptPath {
 		this.pointsInOrder = pointsInOrder;
 	}
 
-	public String getSelectedMinCost() {
-		return selectedMinCost;
+	public String getminDistance() {
+		return minDistance;
 	}
 
-	public void setSelectedMinCost(String selectedMinCost) {
-		this.selectedMinCost = selectedMinCost;
+	public void setminDistance(String minDistance) {
+		this.minDistance = minDistance;
 	}
 
-	public String getAnotherMinCost() {
-		return anotherMinCost;
+	public String getminDuration() {
+		return minDuration;
 	}
 
-	public void setAnotherMinCost(String anotherMinCost) {
-		this.anotherMinCost = anotherMinCost;
+	public void setminDuration(String minDuration) {
+		this.minDuration = minDuration;
 	}
 
 	public String getMode() {
@@ -80,5 +90,8 @@ public class OptPath {
 	public void setDetailDirections(List<DetailDirection> detailDirections) {
 		this.detailDirections = detailDirections;
 	}
+
+	
+	
 	
 }
