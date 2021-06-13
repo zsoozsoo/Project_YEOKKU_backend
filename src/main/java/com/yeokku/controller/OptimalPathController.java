@@ -34,9 +34,7 @@ public class OptimalPathController {
 
 	static int N, minCost2;
 	static int[][] W, W2, D, P;
-	static boolean[][] noTransitPath;
-	static boolean noOriginTransit;
-	static boolean noDestTransit;
+	static boolean[][] noTransitPath = new boolean[11][11];
 	static List<Integer> OptPath;
 	static Map<Integer, Point> map;
 	static int visitedAllCity;
@@ -45,8 +43,11 @@ public class OptimalPathController {
 
 	// 관광지 배열(시작점) 받아서 최적경로(순환)를 구성하는 순서대로 배열 반환
 	@PostMapping("/optpath_round/{mode}")
-	private List<OptPath> optpath_round(@PathVariable String mode, @RequestBody ConfigPathInput cpinput)
+	public List<OptPath> optpath_round(@PathVariable String mode, @RequestBody ConfigPathInput cpinput)
 			throws IOException {
+		
+
+		System.out.println(noTransitPath);
 		
 		Point start = cpinput.getStart();
 		List<Point> input = cpinput.getPointList();
@@ -62,7 +63,7 @@ public class OptimalPathController {
 
 	//상세정보 응답
 	@PostMapping("/path_detail")
-	private List<DetailDirection> path_detail(@RequestBody OptPath optpath) throws IOException {
+	public List<DetailDirection> path_detail(@RequestBody OptPath optpath) throws IOException {
 
 		String mode = optpath.getMode();
 		String type = optpath.getSelectCriteria();
@@ -94,21 +95,16 @@ public class OptimalPathController {
 			final String SERVICE_KEY = "AIzaSyC6HRafHB4tQDc-GSCPbwTnybYJLNybxDw";
 			String urlStr = null;
 
-			if (noTransitPath[currIndex][nextIndex]) { // 이 구간에 대중교통 경로가 없어 자동차 경로로 대체한 경우
+//			if (noTransitPath[currIndex][nextIndex]) { // 이 구간에 대중교통 경로가 없어 자동차 경로로 대체한 경우
 				
-				message = "대중교통정보가 존재하지 않아 자동차경로가 적용된 구간입니다.";
 				
-				System.out.println(currIndex + " 에서 " + nextIndex + " 대체 경로");
-				urlStr = "https://maps.googleapis.com/maps/api/directions/json?language=ko&mode=driving" + "&origin="
-						+ curr.getLat() + "," + curr.getLng() + "&destination=" + next.getLat() + "," + next.getLng()
-						+ "&key=" + SERVICE_KEY;
 
-			} else { // 사용자의 선호 이동방법을 그대로 적용한 경우
-				System.out.println(currIndex + " 에서 " + nextIndex + " 정상 경로");
+//			} else { // 사용자의 선호 이동방법을 그대로 적용한 경우
+//				System.out.println(currIndex + " 에서 " + nextIndex + " 정상 경로");
 				urlStr = "https://maps.googleapis.com/maps/api/directions/json?language=ko&mode=" + mode + "&origin="
 						+ curr.getLat() + "," + curr.getLng() + "&destination=" + next.getLat() + "," + next.getLng()
 						+ "&key=" + SERVICE_KEY;
-			}
+//			}
 
 			try { // json 파싱
 				URL url = new URL(urlStr);
@@ -125,12 +121,36 @@ public class OptimalPathController {
 				JSONObject jsonObj = (JSONObject) jsonParse.parse(response);
 				String status = (String) jsonObj.get("status");
 				if (!status.equals("OK")) {
-					System.out.println("경로가 존재하지 않습니다.");
-					continue;
+//					System.out.println("경로가 존재하지 않습니다.");
+					message = "대중교통정보가 존재하지 않아 자동차경로가 적용된 구간입니다.";
+					
+					System.out.println(currIndex + " 에서 " + nextIndex + " 대체 경로");
+					urlStr = "https://maps.googleapis.com/maps/api/directions/json?language=ko&mode=driving" + "&origin="
+							+ curr.getLat() + "," + curr.getLng() + "&destination=" + next.getLat() + "," + next.getLng()
+							+ "&key=" + SERVICE_KEY;
+					try { // json 파싱
+						url = new URL(urlStr);
+						line = "";
+						response = "";
+
+						br = new BufferedReader(new InputStreamReader(url.openStream()));
+						while ((line = br.readLine()) != null) {
+							response = response.concat(line);
+						}
+
+						jsonParse = new JSONParser();
+						jsonObj = (JSONObject) jsonParse.parse(response);
+					    status = (String) jsonObj.get("status");
+					    
+					} catch (ParseException e) {
+						e.printStackTrace();
+						continue;
+					}
+//					continue;
 				}
 				JSONArray routes = (JSONArray) jsonObj.get("routes");
 				JSONObject route = ((JSONObject) routes.get(0));
-				String polyline  = (String) route.get("overview_polyline");
+				String polyline  = (String) ((JSONObject) route.get("overview_polyline")).get("points");
 				JSONArray legs = (JSONArray) route.get("legs");
 				JSONObject leg = ((JSONObject) legs.get(0)); //경유지 없으므로 첫 번째 요소만 이용함.
 
@@ -147,8 +167,8 @@ public class OptimalPathController {
 						String step_distance = (String) ((JSONObject) step.get("distance")).get("text");
 						String step_durtaion = (String) ((JSONObject) step.get("duration")).get("text");
 						String step_mode = (String) step.get("travel_mode");
-						
-						Step s = new Step(step_distance,step_durtaion,step_mode);
+						String step_instruction = (String) step.get("html_instructions");
+						Step s = new Step(step_distance,step_durtaion,step_mode,step_instruction);
 						
 						JSONArray steps_detail = (JSONArray) step.get("steps");
 						
@@ -159,11 +179,12 @@ public class OptimalPathController {
 								
 								JSONObject step_detail = (JSONObject) steps_detail.get(k);
 
-								String step_distance_detail = (String) ((JSONObject) step.get("distance")).get("text");
-								String step_durtaion_detail = (String) ((JSONObject) step.get("duration")).get("text");
-								String step_mode_detail = (String) step.get("travel_mode");
+								String step_distance_detail = (String) ((JSONObject) step_detail.get("distance")).get("text");
+								String step_durtaion_detail = (String) ((JSONObject) step_detail.get("duration")).get("text");
+								String step_mode_detail = (String) step_detail.get("travel_mode");
+								String step_mode_instruction = (String) step_detail.get("html_instructions");
 								
-								Step sd = new Step(step_distance_detail,step_durtaion_detail,step_mode_detail);
+								Step sd = new Step(step_distance_detail,step_durtaion_detail,step_mode_detail,step_mode_instruction);
 								
 								detailStepList.add(sd);
 							}	
@@ -171,13 +192,6 @@ public class OptimalPathController {
 						
 						instructionList.add(s);
 						
-//						String instruction_temp = (String) step.get("html_instructions");
-//						System.out.println("instruction: " + instruction_temp);
-//						if (instruction_temp != null && (instruction_temp.contains("버스")
-//								|| instruction_temp.contains("지하철") || instruction_temp.contains("기차")
-//								|| instruction_temp.contains("트램") || instruction_temp.contains("열차"))) {
-//							instructionList.add(instruction_temp);
-//						}
 
 					}
 				}
@@ -244,8 +258,6 @@ public class OptimalPathController {
 				if(i == j) continue;
 				
 				message = "";
-				noOriginTransit = false;
-				noDestTransit = false;
 
 				Point origin = input.get(i);
 				Point dest = input.get(j);
@@ -278,7 +290,7 @@ public class OptimalPathController {
 						System.out.println(mode + "모드에서 " + origin.getPointName() + "로부터 " + dest.getPointName()
 								+ "로의 경로가 존재하지 않습니다.");
 
-						noTransitPath[i][j] = noTransitPath[j][i] = true;
+						noTransitPath[i][j] = true;
 						message = "하나 이상의 구간에 대중교통정보가 존재하지 않아 자동차 모드가 적용된 경로입니다.";
 						
 						// 대중교통 경로 없으면 자동차 경로로 찾음

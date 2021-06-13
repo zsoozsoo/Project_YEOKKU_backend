@@ -7,15 +7,17 @@ public class Step {
 	String distance;
 	String duration;
 	String travelMode;
+	String instruction;
 	List<Step> detailStepList;
 	
 	public Step() {}
 	
-	public Step(String distance, String duration, String travelMode) {
+	public Step(String distance, String duration, String travelMode, String instruction) {
 		super();
 		this.distance = distance;
 		this.duration = duration;
 		this.travelMode = travelMode;
+		this.instruction = instruction;
 	}
 	
 	public String getDistance() {
@@ -41,6 +43,14 @@ public class Step {
 	}
 	public void setDetailStepList(List<Step> detailStepList) {
 		this.detailStepList = detailStepList;
+	}
+
+	public String getInstruction() {
+		return instruction;
+	}
+
+	public void setInstruction(String instruction) {
+		this.instruction = instruction;
 	}
 	
 	
