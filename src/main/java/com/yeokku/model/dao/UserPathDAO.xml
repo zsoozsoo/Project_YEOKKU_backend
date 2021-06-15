@@ -6,31 +6,52 @@
     
 <mapper namespace="com.yeokku.model.dao.UserPathDAO">
 
+	<resultMap type="OptPath" id="OptPathResultMap">
+		<id column="upid" property="userPathId"/>
+		<result column="userid" property="userId"/>
+		<result column="path_type" property="pathType"/>
+		<result column="round_path_criteria" property="roundPathCriteria"/>
+		<result column="distance" property="totalDistance"/>
+		<result column="duration" property="totalDuration"/>
+		<result column="travel_mode" property="travelMode"/>
+		<result column="message" property="message"/>
+		<result column="country_name" property="countryName"/>
+		<result column="save_date" property="saveDate"/>
+	</resultMap> 
+
 	<select id="selectLastUserPathId"  resultType="Integer">
 		SELECT LAST_INSERT_ID();
 	</select>
 	
-	<insert id="insertUserPath" parameterType="UserPath">
+	<insert id="insertUserPath" parameterType="OptPath">
 		insert into user_path_test
-			(userid, save_date, country_name)
+			(userid, save_date, country_name,distance,duration,travel_mode,path_type,round_path_criteria,message)
 		values
 			(
 				#{userId},
 				sysdate(),
-				#{countryName}
+				#{countryName},
+				#{totalDistance},
+				#{totalDuration},
+				#{travelMode},
+				#{pathType},
+				#{roundPathCriteria},
+				#{message}
 			)
 	</insert>
 	
-	<insert id="insertConfigPath" parameterType="ConfigPath">
-		insert into config_path_test
-			(pid, p_order, upid)
-		values
-			(
-				#{pointId},
-				#{pointOrder},
-				#{pathId}
-			)
-	</insert>
+	<select id="selectUserPathListById" resultMap="OptPathResultMap" parameterType="string">
+		select upid, save_date, country_name,distance,duration,travel_mode,path_type,round_path_criteria,message
+		from user_path_test
+		where userid = #{userId}
+	</select>
+	
+	<select id="selectUserPathListByIdCountry" resultMap="OptPathResultMap" parameterType="hashmap">
+		select upid, save_date,distance,duration,travel_mode,path_type,round_path_criteria,message
+		from user_path_test
+		where userid = #{userId}
+		and country_name = #{countryName}
+	</select>
 	
 </mapper>
 

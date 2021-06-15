@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+    
+<mapper namespace="com.yeokku.model.dao.ConfigPathDAO">
+	
+	<resultMap type="ConfigPath" id="ConfigPathResultMap">
+		<id column="cid" property="cpId"/>
+		<result column="pid" property="pointId"/>
+		<result column="p_order" property="pointOrder"/>
+		<result column="pname" property="pointName"/>
+		<result column="lat" property="pointLat"/>
+		<result column="lng" property="pointLng"/>
+		<result column="descr" property="description"/>
+	</resultMap> 
+	
+	<insert id="insertConfigPath" parameterType="ConfigPath">
+		insert into config_path_test
+			(pid, p_order, upid, pname)
+		values
+			(
+				#{pointId},
+				#{pointOrder},
+				#{pathId},
+				#{pointName}
+			)
+	</insert>
+	
+	<select id="selectConfigPathList" resultMap="ConfigPathResultMap" parameterType="Integer">
+		select c.cid, c.pid, c.p_order, p.pname, p.lat, p.lng, p.descr
+		from config_path_test c
+		inner join point p
+		on p.pid = c.pid
+		where upid = #{upid}
+		order by p_order
+	</select> 
+	
+</mapper>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
