@@ -33,12 +33,26 @@ public class Point {
 		this.lat = lat;
 		this.lng = lng;
 	}
-	
-
-	public Point(int pointId, String countryName) {
+	public Point(int pointId, String pointName) {
 		super();
 		this.pointId = pointId;
-		this.countryName = countryName;
+		this.pointName = pointName;
+	}
+	public Point(String pointName, double lat, double lng, String desc) {
+
+		this.pointName = pointName;
+		this.lat = lat;
+		this.lng = lng;
+		this.desc = desc;
+	}
+//	public Point(int pointId, String countryName) {
+//		super();
+//		this.pointId = pointId;
+//		this.countryName = countryName;
+//	}
+
+	public Point(int pointId) {
+		this.pointId = pointId;
 	}
 
 	public int getPointId() {
