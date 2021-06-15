@@ -54,8 +54,8 @@ public class PathController {
 		
 		List<OptPath> optPathList = new ArrayList<>();
 		
-		optPathList.add(configOptPathRound(mode, "distance", input));
-		optPathList.add(configOptPathRound(mode, "duration", input));
+		optPathList.add(configOptPathRound(mode, "distance", input,cpinput.getCountryName()));
+		optPathList.add(configOptPathRound(mode, "duration", input,cpinput.getCountryName()));
 
 		return optPathList;
 	}
@@ -97,11 +97,11 @@ public class PathController {
 					}
 					
 					urlStr = urlStr.substring(0, urlStr.length()-1); // 마지막 파이프라인 제거
-					urlStr += "&mode=driving" + "&key=" + SERVICE_KEY;
+					urlStr += "&mode="+mode + "&key=" + SERVICE_KEY;
 				}
 				
 		System.out.println(urlStr);
-		String countryName = cpinput.getStart().getCountryName();
+		String countryName = cpinput.getCountryName();
 		OptPath optPath = null;
 		try { // json 파싱
 
@@ -215,7 +215,7 @@ public class PathController {
 		return optPath;
 	}
 
-	private OptPath configOptPathRound(String mode, String type, List<Point> input) throws IOException {
+	private OptPath configOptPathRound(String mode, String type, List<Point> input,String countryName) throws IOException {
 		long startTime = System.currentTimeMillis();
 		// ======================================= 테스트 후 주석처리해야 할 부분 시작 (오스트리아 빈의 관광지
 		// 5곳의 위치 정보 임의로 넣음)
@@ -238,7 +238,6 @@ public class PathController {
 		P = new int[65537][11];
 		noTransitPath = new boolean[11][11];
 		OptPath = new ArrayList<>();
-		String countryName = input.get(0).getCountryName();
 		
 		List<Point> output = new ArrayList<>();
 		map = new HashMap<>();
@@ -518,7 +517,7 @@ public class PathController {
 						urlStr = "https://maps.googleapis.com/maps/api/directions/json?language=ko&mode=driving" + "&origin="
 								+ curr.getLat() + "," + curr.getLng() + "&destination=" + next.getLat() + "," + next.getLng()
 								+ "&key=" + SERVICE_KEY;
-						
+						System.out.println(urlStr);
 						try { 
 							url = new URL(urlStr);
 							line = "";

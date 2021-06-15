@@ -7,6 +7,7 @@ public class ConfigPathInput {
 	private Point start;
 	private Point end;
 	private List<Point> pointList;
+	private String countryName;
 	
 	public ConfigPathInput() {}
 	
@@ -33,6 +34,14 @@ public class ConfigPathInput {
 	}
 	public void setPointList(List<Point> pointList) {
 		this.pointList = pointList;
+	}
+
+	public String getCountryName() {
+		return countryName;
+	}
+
+	public void setCountryName(String countryName) {
+		this.countryName = countryName;
 	}
 
 }
