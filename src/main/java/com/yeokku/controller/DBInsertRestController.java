@@ -184,13 +184,13 @@ public class DBInsertRestController {
 				Elements element2 = element.select("div.mw-content-ltr");
 				Iterator<Element> points = element2.select("li").iterator();
 				
-				System.out.println("===========" + cityName + "===========");
+//				System.out.println("===========" + cityName + "===========");
 				
 				while(points.hasNext()) {
 					Element point = points.next();
 					String pointName = point.text();
 					
-					System.out.println(pointName);
+//					System.out.println(pointName);
 					pointList.add(new Point(pointName, cityName));
 					
 				}	
@@ -208,8 +208,8 @@ public class DBInsertRestController {
 			
 			address = address.replace(" ", "+");
 			
-			final String SERVICE_KEY = "AIzaSyAmrzwR0Tl9B8SI0dIProLdTJBjWtKilAc이부분지워주세요";
-			final String urlStr = "https://maps.googleapis.com/maps/api/geocode/json?address=" + address + "&key="
+			final String SERVICE_KEY = "AIzaSyAmrzwR0Tl9B8SI0dIProLdTJBjWtKilAc";
+			String urlStr = "https://maps.googleapis.com/maps/api/geocode/json?address=" + address + "&key="
 					+ SERVICE_KEY;
 			
 			try { // json 파싱
@@ -235,10 +235,43 @@ public class DBInsertRestController {
 				
 				double centerLat = (double) posObject3.get("lat");
 				double centerLng = (double) posObject3.get("lng");
-				p.setLat(centerLat);
-				p.setLng(centerLng);
 				
-				System.out.println(address+" : " + centerLat + "," + centerLng);
+				// 위도경도로 주소 받아서 저장
+
+				urlStr = "https://maps.googleapis.com/maps/api/geocode/json?latlng=" + centerLat +"," + centerLng + "&key="
+						+ SERVICE_KEY;
+				
+				try { // json 파싱
+//					System.out.println(p.getPointName()+"get address by lat lng start ==========================");
+					url = new URL(urlStr);
+					line = "";
+		            response = "";
+					
+					br = new BufferedReader(new InputStreamReader(url.openStream()));
+		            while ((line = br.readLine()) != null) {
+		            	response = response.concat(line);               
+		            }      
+					
+					jsonParse = new JSONParser();
+					jsonObj = (JSONObject) jsonParse.parse(response);
+					positionArray = (JSONArray) jsonObj.get("results");
+		
+					if(positionArray.size() == 0) continue;
+					
+					posObject = ((JSONObject) positionArray.get(0));
+					String address_res =  (String) posObject.get("formatted_address");
+					System.out.println(address_res);
+					p.setLat(centerLat);
+					p.setLng(centerLng);
+					
+					p.setAddress(address_res);
+					
+					System.out.println(address+" : " + centerLat + "," + centerLng+ ": "+address_res);
+					
+				} catch (ParseException e) {
+					e.printStackTrace();
+				}
+				
 				
 			} catch (ParseException e) {
 				e.printStackTrace();
@@ -275,8 +308,8 @@ public class DBInsertRestController {
 
 		}
 
-//		pointDao.insertAllPlaces(pointList);
-//		System.out.println("points insert completed.");
+		pointDao.insertAllPlaces(pointList);
+		System.out.println("points insert completed.");
 	}
 	
 }
