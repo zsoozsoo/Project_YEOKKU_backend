@@ -11,6 +11,7 @@ public class Point {
 	private double lat;
 	private double lng;
 	private String countryName;
+	private String address;
 	
 	public Point() {}
 	
@@ -114,6 +115,14 @@ public class Point {
 
 	public void setCountryName(String countryName) {
 		this.countryName = countryName;
+	}
+
+	public String getAddress() {
+		return address;
+	}
+
+	public void setAddress(String address) {
+		this.address = address;
 	}
 		
 

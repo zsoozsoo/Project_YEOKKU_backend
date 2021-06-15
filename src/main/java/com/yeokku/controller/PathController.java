@@ -47,8 +47,9 @@ public class PathController {
 	@PostMapping("/round/{mode}")
 	public List<OptPath> optpath_round(@PathVariable String mode, @RequestBody ConfigPathInput cpinput)
 			throws IOException {
-		
-		List<Point> input = cpinput.getPointList();
+		List<Point> input = null;
+		if(cpinput.getPointList()==null)input= new ArrayList<>();
+		else input = cpinput.getPointList();
 		input.add(0, cpinput.getStart());
 		
 		List<OptPath> optPathList = new ArrayList<>();
@@ -61,24 +62,42 @@ public class PathController {
 	
 	@PostMapping("/oneway/{mode}")	
 	private OptPath configOptPathOneWay(@PathVariable String mode, @RequestBody ConfigPathInput cpinput) throws IOException {
+
+		long startTime = System.currentTimeMillis();
+		
+		Map<String,Point> map = new HashMap<>();
+//		map.put(cpinput.getStart().getAddress(),cpinput.getStart());
+		map.put(cpinput.getEnd().getAddress(),cpinput.getEnd());
+		
+		if(cpinput.getPointList()!= null) {
+			
+			for (int i = 0; i < cpinput.getPointList().size(); i++) {
+				Point p = cpinput.getPointList().get(i);
+				map.put(p.getAddress(), p);
+			}
+		}
 		
 		final String SERVICE_KEY = "AIzaSyC6HRafHB4tQDc-GSCPbwTnybYJLNybxDw";
 		
 		String urlStr = "https://maps.googleapis.com/maps/api/directions/json?"
-				+ "&origin=" + cpinput.getStart().getLat() + "," + cpinput.getStart().getLng()
-				+ "&destination=" + cpinput.getEnd().getLat() + "," + cpinput.getEnd().getLng();
+//				+ "&origin=" + cpinput.getStart().getLat() + "," + cpinput.getStart().getLng()
+//				+ "&destination=" + cpinput.getEnd().getLat() + "," + cpinput.getEnd().getLng();
+				+ "&origin=" + cpinput.getStart().getPointName().replace(" ", "+")
+				+ "&destination=" + cpinput.getEnd().getPointName().replace(" ", "+");
 		
-				int size = cpinput.getPointList().size();
-				if(size == 0) {
+				if(cpinput.getPointList() == null) {
+
 					urlStr += "&mode" + mode + "&key=" + SERVICE_KEY;
 				}else {
+
+					int size = cpinput.getPointList().size();
 					urlStr += "&waypoints=optimize:true|";
 					for(int i=0;i<size;i++) {		
-						urlStr += cpinput.getPointList().get(i).getLat() +"," + cpinput.getPointList().get(i).getLng() + "|";
+						urlStr += cpinput.getPointList().get(i).getPointName().replace(" ", "+") + "|";
 					}
 					
-					urlStr = urlStr.substring(0, urlStr.length()-1); //마지막 파이프라인 제거
-					urlStr += "&mode" + mode + "&key=" + SERVICE_KEY;
+					urlStr = urlStr.substring(0, urlStr.length()-1); // 마지막 파이프라인 제거
+					urlStr += "&mode=driving" + "&key=" + SERVICE_KEY;
 				}
 				
 		System.out.println(urlStr);
@@ -151,9 +170,17 @@ public class PathController {
 				//시작점, 종점, 경유지 포함한 모든 지점 리스트에 정보 넣기
 				
 				//처음 시작점만 시작점이랑 끝점 둘 다 넣기
-				if(i==0) pointsInOrder.add(new Point(startName,startCityName,startLat,startLng));
+//				if(i==0) pointsInOrder.add(new Point(startName,startCityName,startLat,startLng));
+				if(i==0) {
+					pointsInOrder.add(cpinput.getStart());
+				}
 				//보통은 끝점만 넣기
-				pointsInOrder.add(new Point(endName,endCityName,endLat,endLng));
+//				pointsInOrder.add(new Point(endName,endCityName,endLat,endLng));
+	
+				pointsInOrder.add(map.get(endName));
+				if(i==legsArray.size()-1) {
+					pointsInOrder.add(cpinput.getEnd());
+				}
 				
 			}
 			
@@ -163,12 +190,13 @@ public class PathController {
 			
 			// -------------------- 방문순서 --------------------
 			JSONArray waypointOrder = (JSONArray) subJsonObject.get("waypoint_order");
-			System.out.print("방문순서 ");
-			for (int i = 0; i <waypointOrder.size(); i++) {
-				System.out.print(waypointOrder.get(i)+" ");
-			}
+//			System.out.print("방문순서 ");
+//			for (int i = 0; i <waypointOrder.size(); i++) {
+//				System.out.print(waypointOrder.get(i)+" ");
+//			}
 			System.out.println();
-			
+			System.out.println(totalDistance);
+			System.out.println(totalDuration);
 			totalDistance = totalDistance / 1000;
 			int hour = (int) (totalDuration / 3600);
 			int min = (int) ((totalDuration % 3600) / 60);
@@ -182,11 +210,13 @@ public class PathController {
 			e.printStackTrace();
 		}
 		
+		long endTime = System.currentTimeMillis();
+		System.out.println("걸린시간:"+(endTime-startTime));
 		return optPath;
 	}
 
 	private OptPath configOptPathRound(String mode, String type, List<Point> input) throws IOException {
-
+		long startTime = System.currentTimeMillis();
 		// ======================================= 테스트 후 주석처리해야 할 부분 시작 (오스트리아 빈의 관광지
 		// 5곳의 위치 정보 임의로 넣음)
 
@@ -222,7 +252,7 @@ public class PathController {
 
 		String message = null;
 		for (int i = 0; i < input.size(); i++) {
-			for (int j = 0; j < input.size(); j++) {
+			for (int j = i+1; j < input.size(); j++) {
 
 				if(i == j) continue;
 				
@@ -233,9 +263,10 @@ public class PathController {
 
 				final String SERVICE_KEY = "AIzaSyC6HRafHB4tQDc-GSCPbwTnybYJLNybxDw";
 				String urlStr = "https://maps.googleapis.com/maps/api/distancematrix/json?mode=" + mode + "&origins="
-						+ origin.getLat() + "," + origin.getLng() + "&destinations=" + dest.getLat() + ","
-						+ dest.getLng() + "&key=" + SERVICE_KEY;
+						+ origin.getAddress().replace(" ","+") + "&destinations=" + dest.getAddress() .replace(" ","+")
+						+ "&key=" + SERVICE_KEY;
 
+				System.out.println(urlStr);
 				try { // json 파싱
 					URL url = new URL(urlStr);
 					String line = "";
@@ -256,16 +287,15 @@ public class PathController {
 					JSONObject posObject3 = ((JSONObject) posObject2.get(0));
 
 					if (posObject3.get("status").equals("ZERO_RESULTS")) {
-						System.out.println(mode + "모드에서 " + origin.getPointName() + "로부터 " + dest.getPointName()
-								+ "로의 경로가 존재하지 않습니다.");
+//						System.out.println(mode + "모드에서 " + origin.getPointName() + "로부터 " + dest.getPointName()
+//								+ "로의 경로가 존재하지 않습니다.");
 
-						noTransitPath[i][j] = true;
+//						noTransitPath[i][j] = true;
 						message = "하나 이상의 구간에 대중교통정보가 존재하지 않아 자동차 모드가 적용된 경로입니다.";
 						
 						// 대중교통 경로 없으면 자동차 경로로 찾음
 						urlStr = "https://maps.googleapis.com/maps/api/distancematrix/json?mode=driving" + "&origins="
-								+ origin.getLat() + "," + origin.getLng() + "&destinations=" + dest.getLat() + ","
-								+ dest.getLng() + "&key=" + SERVICE_KEY;
+								+ origin.getAddress().replace(" ","+") + "&destinations=" + dest.getAddress().replace(" ","+") + "&key=" + SERVICE_KEY;
 
 						try {
 							URL url_alt = new URL(urlStr);
@@ -308,8 +338,8 @@ public class PathController {
 						res2 = (long) posObject4.get("value");
 					}
 
-					W[i][j] = (int) res; // 주 인접행렬 (외판원순회에 실제로 쓰임)
-					W2[i][j] = (int) res2; // 부 인접행렬 (외판원순회에 쓰이지 않으나 최적경로 구성 후 계산에 사용됨)
+					W[i][j] = W[j][i] = (int) res; // 주 인접행렬 (외판원순회에 실제로 쓰임)
+					W2[i][j] = W2[j][i] = (int) res2; // 부 인접행렬 (외판원순회에 쓰이지 않으나 최적경로 구성 후 계산에 사용됨)
 
 //					if (type.equals("distance")) {
 //						System.out.println("distance between " + origin.getPointName() + " and " + dest.getPointName()
@@ -370,17 +400,20 @@ public class PathController {
 			double distance = minCost / 1000;
 			int hour = minCost2 / 3600;
 			int min = (minCost2 % 3600) / 60;
-
-			optPath = new OptPath("순환", type, output, distance + "km", hour + "시간 " + min + "분", mode, message,countryName);
+			
+			if(hour==0)optPath = new OptPath("순환", type, output, distance + "km",  min + "분", mode, message,countryName);
+			else optPath = new OptPath("순환", type, output, distance + "km", hour + "시간 " + min + "분", mode, message,countryName);
 
 		} else {
 			int hour = minCost / 3600;
 			int min = (minCost % 3600) / 60;
 			double distance = minCost2 / 1000;
 
+			if(hour==0) optPath = new OptPath("순환", type, output, distance + "km",  min + "분", mode, message,countryName);
 			optPath = new OptPath("순환", type, output,  distance + "km",hour + "시간 " + min + "분", mode, message,countryName);
 		}
-
+		long endTime = System.currentTimeMillis();
+		System.out.println("걸린시간:"+(endTime-startTime));
 		return optPath;
 	}
 
@@ -441,7 +474,7 @@ public class PathController {
 	}
 
 	//상세정보 응답
-	@PostMapping("/path_detail")
+	@PostMapping("/detail")
 	public List<DetailDirection> path_detail(@RequestBody OptPath optpath) throws IOException {
 
 			String mode = optpath.getTravelMode();

@@ -16,11 +16,12 @@
 		<result column="lat" property="lat"/>
 		<result column="lng" property="lng"/>
 		<result column="country_name" property="countryName"/>
+			<result column="address" property="address"/>
 	</resultMap>
 	
 	<insert id="insertAllPlaces" parameterType="Point">
 		insert into point
-			(vname, city_name, lat, lng, img, descr)
+			(pname, city_name, lat, lng, img, descr, address)
 		values
 		<foreach collection="pointList" item="item" separator=",">
 			(
@@ -29,16 +30,17 @@
 				#{item.lat},
 				#{item.lng},
 				"imgpath",
-				#{item.desc}
+				#{item.desc},
+				#{item.address}
 			)
 		</foreach>
 	</insert>
 	<select id="selectPointList"  resultMap="PointResultMap" parameterType="string">
-		select pid, pname, city_id, city_name,  lat, lng, img, descr, country_name
+		select pid, pname, city_id, city_name,  lat, lng, img, descr, country_name,address
 		from point;
 	</select>
 	<select id="selectPointListByCity"  resultMap="PointResultMap" parameterType="string">
-		select pid, pname, city_id, city_name,  lat, lng, img, descr, country_name
+		select pid, pname, city_id, city_name,  lat, lng, img, descr, country_name,address
 		from point
 		where city_name = #{cityName};
 	</select>		
