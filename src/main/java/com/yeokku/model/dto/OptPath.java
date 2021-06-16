@@ -7,7 +7,7 @@ public class OptPath {
 	private int userPathId;
 	private String userId; //유저 아이디
 	private String pathType; // 순환 or 비순환  
-	private String roundPathCriteria; // 선택한 기준 (거리 or 시간) - 순환경로만 해당
+	private String pathCriteria; // 선택한 기준 (거리 or 시간)
 	private List<Point> pointsInOrder; // 순서대로 저장된 관광지
 	private String totalDistance; // 해당 경로의 총 거리
 	private String totalDuration; // 해당 경로의 총 시간
@@ -35,7 +35,7 @@ public class OptPath {
 			String totalDuration, String travelMode, String message, String countryName) {
 		super();
 		this.pathType = pathType;
-		this.roundPathCriteria = roundPathCriteria;	
+		this.pathCriteria = roundPathCriteria;	
 		this.pointsInOrder = pointsInOrder;
 		this.totalDistance = totalDistance;
 		this.totalDuration = totalDuration;
@@ -52,12 +52,12 @@ public class OptPath {
 		this.pathType = pathType;
 	}
 
-	public String getRoundPathCriteria() {
-		return roundPathCriteria;
+	public String getPathCriteria() {
+		return pathCriteria;
 	}
 
-	public void setRoundPathCriteria(String roundPathCriteria) {
-		this.roundPathCriteria = roundPathCriteria;
+	public void setPathCriteria(String roundPathCriteria) {
+		this.pathCriteria = roundPathCriteria;
 	}
 
 	public List<Point> getPointsInOrder() {
