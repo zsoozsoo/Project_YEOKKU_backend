@@ -731,7 +731,7 @@ public class PathController {
 				// google direction api 로 상세정보
 				final String SERVICE_KEY = "AIzaSyC6HRafHB4tQDc-GSCPbwTnybYJLNybxDw";
 				String urlStr = "https://maps.googleapis.com/maps/api/directions/json?language=ko&mode=" + mode + "&origin="
-							+ curr.getLat() + "," + curr.getLng() + "&destination=" + next.getLat() + "," + next.getLng()
+							+ curr.getAddress().replace(" ","+") + "&destination=" + next.getAddress().replace(" ","+")
 							+ "&key=" + SERVICE_KEY;
 
 				try { // json 파싱
@@ -748,10 +748,10 @@ public class PathController {
 					String status = (String) jsonObj.get("status");
 					
 					if (!status.equals("OK")) { // 대중교통인 경우 길찾기 정보가 없을 수 있음 => 자동차 모드로 찾되, 이를 명시해야 함.
-						System.out.println("대중교통 정보가 존재하지 않아 자동차 경로로 탐색함.");
-						message = "대중교통정보가 존재하지 않아 자동차경로가 적용된 구간입니다.";
-						urlStr = "https://maps.googleapis.com/maps/api/directions/json?language=ko&mode=driving" + "&origin="
-								+ curr.getLat() + "," + curr.getLng() + "&destination=" + next.getLat() + "," + next.getLng()
+						System.out.println("교통 정보가 존재하지 않아 대체경로로 탐색함.");
+						message = "교통정보가 존재하지 않아 대체경로가 적용된 구간입니다.";
+						urlStr = "https://maps.googleapis.com/maps/api/directions/json?language=ko&origin="
+								+ curr.getAddress().replace(" ","+") + "&destination=" + next.getAddress().replace(" ","+")
 								+ "&key=" + SERVICE_KEY;
 						System.out.println(urlStr);
 						try { 
@@ -769,7 +769,7 @@ public class PathController {
 						    status = (String) jsonObj.get("status");
 						    
 						    if (!status.equals("OK")) {
-						    	System.out.println("자동차 경로도 존재하지 않음.");
+						    	System.out.println("대체경로도 존재하지 않음.");
 //						    	throw new Exception("경로존재하지않음예외발생.");
 						    }
 						    
