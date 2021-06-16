@@ -356,6 +356,7 @@ public class PathController {
 			JSONObject jsonObj = (JSONObject) jsonParse.parse(response);
 			JSONArray routesArray = (JSONArray) jsonObj.get("routes");
 			
+			
 			if(mode.equals("transit") && routesArray.size()==0) msg = "정보가 없습니다. 도보나 운전 정보를 불러옵니다." ;
 				
 			// 여러 경로 for문으로 돌리기
