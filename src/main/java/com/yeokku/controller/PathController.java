@@ -42,6 +42,7 @@ public class PathController {
 	static int visitedAllCity;
 	static final int INF = Integer.MAX_VALUE;
 	static int maxNum = 0;
+	static int minCost1;
 
 	// 관광지 배열(시작점) 받아서 최적경로(순환)를 구성하는 순서대로 배열 반환
 	@PostMapping("/round/{mode}")
@@ -59,14 +60,249 @@ public class PathController {
 
 		return optPathList;
 	}
-	
-	@PostMapping("/oneway/{mode}")	
-	private OptPath configOptPathOneWay(@PathVariable String mode, @RequestBody ConfigPathInput cpinput) throws IOException {
+	// 관광지 배열(시작점) 받아서 최적경로(순환)를 구성하는 순서대로 배열 반환
+		@PostMapping("/oneway/{mode}")
+		public List<OptPath> optpath_oneway(@PathVariable String mode, @RequestBody ConfigPathInput cpinput)
+				throws IOException {
+			List<Point> input = null;
+			if(cpinput.getPointList()==null)input= new ArrayList<>();
+			else input = cpinput.getPointList();
+			input.add(0, cpinput.getStart());
+//			input.add(input.size(), cpinput.getEnd());
+			
+			List<OptPath> optPathList = new ArrayList<>();
+			
+			optPathList.add(configOptPathOneway(mode, "distance", input,cpinput.getCountryName()));
+			optPathList.add(configOptPathOneway(mode, "duration", input,cpinput.getCountryName()));
+
+			return optPathList;
+		}
+
+	private OptPath configOptPathOneway(String mode, String type, List<Point> input,String countryName) throws IOException {
+		
+		long startTime = System.currentTimeMillis();
+		// ======================================= 테스트 후 주석처리해야 할 부분 시작 (오스트리아 빈의 관광지 5곳의 위치 정보 임의로 넣음)
+
+//		List<Point> input = new ArrayList<>();
+//		
+//		input.add(new Point("관광지1", 48.2038016, 16.3617874));
+//		input.add(new Point("관광지2", 48.2033369, 16.3586166));
+//		input.add(new Point("관광지3", 48.2404153, 16.3868931));
+//		input.add(new Point("관광지4", 48.2167398, 16.3980327));
+//		input.add(new Point("관광지5", 48.0927289, 15.9518237));
+
+		// ======================================== 테스트 후 주석처리해야 할 부분 끝
+
+		N = input.size();	
+		visitedAllCity = (1 << N) - 1;
+		W = new int[11][11];
+		W2 = new int[11][11];
+		D = new int[65537][11];
+		P = new int[65537][11];
+//		noTransitPath = new boolean[11][11];
+		OptPath = new ArrayList<>();
+		minCost1 = 0;
+		minCost2 = 0;
+		
+		List<Point> output = new ArrayList<>();
+		map = new HashMap<>();
+
+		for (int i = 0; i < input.size(); i++) {
+			map.put(i, input.get(i));
+		}
+
+		// ================== 1. 모드(자동차,자전거,도보)에 따라 거리 또는 시간 값으로 인접행렬 구성 - google
+		// distance api =============================
+
+		String message = null;
+		for (int i = 0; i < input.size(); i++) {
+			for (int j = i+1; j < input.size(); j++) {
+
+				if(i == j) continue;
+				
+				message = "";
+
+				Point origin = input.get(i);
+				Point dest = input.get(j);
+
+				final String SERVICE_KEY = "AIzaSyC6HRafHB4tQDc-GSCPbwTnybYJLNybxDw";
+				String urlStr = "https://maps.googleapis.com/maps/api/distancematrix/json?mode=" + mode + "&origins="
+						+ origin.getAddress().replace(" ","+") + "&destinations=" + dest.getAddress() .replace(" ","+")
+						+ "&key=" + SERVICE_KEY;
+
+				System.out.println(urlStr);
+				try { // json 파싱
+					URL url = new URL(urlStr);
+					String line = "";
+					String response = "";
+
+					BufferedReader br;
+					br = new BufferedReader(new InputStreamReader(url.openStream()));
+					while ((line = br.readLine()) != null) {
+						response = response.concat(line);
+					}
+
+					JSONParser jsonParse = new JSONParser();
+					JSONObject jsonObj = (JSONObject) jsonParse.parse(response);
+					JSONArray positionArray = (JSONArray) jsonObj.get("rows");
+
+					JSONObject posObject = ((JSONObject) positionArray.get(0));
+					JSONArray posObject2 = (JSONArray) posObject.get("elements");
+					JSONObject posObject3 = ((JSONObject) posObject2.get(0));
+
+					if (posObject3.get("status").equals("ZERO_RESULTS")) {
+//						System.out.println(mode + "모드에서 " + origin.getPointName() + "로부터 " + dest.getPointName()
+//								+ "로의 경로가 존재하지 않습니다.");
+
+//						noTransitPath[i][j] = true;
+						message = "하나 이상의 구간에 대중교통정보가 존재하지 않아 자동차 모드가 적용된 경로입니다.";
+						
+						// 대중교통 경로 없으면 자동차 경로로 찾음
+						urlStr = "https://maps.googleapis.com/maps/api/distancematrix/json?mode=driving" + "&origins="
+								+ origin.getAddress().replace(" ","+") + "&destinations=" + dest.getAddress().replace(" ","+") + "&key=" + SERVICE_KEY;
+
+						try {
+							URL url_alt = new URL(urlStr);
+							String line_alt = "";
+							String response_alt = "";
+
+							BufferedReader br_alt;
+							br_alt = new BufferedReader(new InputStreamReader(url_alt.openStream()));
+							while ((line_alt = br_alt.readLine()) != null) {
+								response_alt = response_alt.concat(line_alt);
+							}
+
+							JSONParser jsonParse_alt = new JSONParser();
+							JSONObject jsonObj_alt = (JSONObject) jsonParse_alt.parse(response_alt);
+							JSONArray positionArray_alt = (JSONArray) jsonObj_alt.get("rows");
+
+							JSONObject posObject_alt = ((JSONObject) positionArray_alt.get(0));
+							JSONArray posObject2_alt = (JSONArray) posObject_alt.get("elements");
+							posObject3 = ((JSONObject) posObject2_alt.get(0));
+
+						} catch (ParseException e) {
+							e.printStackTrace();
+							continue;
+						}
+					}
+
+					JSONObject posObject4;
+					long res = 0, res2 = 0;
+
+					if (type.equals("distance")) {
+						posObject4 = (JSONObject) posObject3.get("distance");
+						res = (long) posObject4.get("value");
+						posObject4 = (JSONObject) posObject3.get("duration");
+						res2 = (long) posObject4.get("value");
+
+					} else {
+						posObject4 = (JSONObject) posObject3.get("duration");
+						res = (long) posObject4.get("value");
+						posObject4 = (JSONObject) posObject3.get("distance");
+						res2 = (long) posObject4.get("value");
+					}
+
+					W[i][j] = W[j][i] = (int) res; // 주 인접행렬 (외판원순회에 실제로 쓰임)
+					W2[i][j] = W2[j][i] = (int) res2; // 부 인접행렬 (외판원순회에 쓰이지 않으나 최적경로 구성 후 계산에 사용됨)
+
+//					if (type.equals("distance")) {
+//						System.out.println("distance between " + origin.getPointName() + " and " + dest.getPointName()
+//								+ " :" + res);
+//						System.out.println("duration between " + origin.getPointName() + " and " + dest.getPointName()
+//								+ " :" + res2);
+//					} else {
+//						System.out.println("duration between " + origin.getPointName() + " and " + dest.getPointName()
+//								+ " :" + res);
+//						System.out.println("distance between " + origin.getPointName() + " and " + dest.getPointName()
+//								+ " :" + res2);
+//					}
+
+				} catch (ParseException e) {
+					e.printStackTrace();
+					continue;
+				}
+			}
+
+		}
+
+		// ========================== 2. 그리디 알고리즘 활용 ============================
+
+//		        for(int i=0;i<65537;i++){
+//		            Arrays.fill(P[i],-1);
+//		        }
+
+		// 총 비용(선택기준에 따라 달라짐 - 이동거리 또는 소요시간)
+		shortest(1, 0);
+		System.out.println("min cost: " + minCost1);
+
+		// 최적경로를 구성하는 관광지별 순서 추적 (P배열 이용) + 부가정보 총 비용 계산(거리 선택한 경우 시간, 시간 선택한 경우 거리)
+//		OptPath.add(0);
+//		OptPath.add(P[0][0]);
+//		minCost2 = W2[0][P[0][0]];
+
+//		tracePath(P[0][0], 1 << P[0][0]);
+//		System.out.println("min cost2: " + minCost2);
+//
+		for (int i = 0; i < OptPath.size(); i++) {
+			output.add(map.get(OptPath.get(i)));
+		}
+
+		// .....3. 흔적
+
+		// ============================ 4. 단위변환====================================
+		OptPath optPath = null;
+
+		if (type.equals("distance")) {
+			double distance = minCost1 / 1000;
+			int hour = minCost2 / 3600;
+			int min = (minCost2 % 3600) / 60;
+			
+			if(hour==0)optPath = new OptPath("비순환", type, output, distance + "km",  min + "분", mode, message,countryName);
+			else optPath = new OptPath("비순환", type, output, distance + "km", hour + "시간 " + min + "분", mode, message,countryName);
+
+		} else {
+			int hour = minCost1 / 3600;
+			int min = (minCost1 % 3600) / 60;
+			double distance = minCost2 / 1000;
+
+			if(hour==0) optPath = new OptPath("비순환", type, output, distance + "km",  min + "분", mode, message,countryName);
+			optPath = new OptPath("비순환", type, output,  distance + "km",hour + "시간 " + min + "분", mode, message,countryName);
+		}
+		long endTime = System.currentTimeMillis();
+		System.out.println("걸린시간:"+(endTime-startTime));
+		return optPath;
+		
+	}
+	private static void shortest(int visited, int curr) {
+//      System.out.println("curr: " + curr + ", visited:" + (visited));
+      OptPath.add(curr);
+		if (visited == visitedAllCity) {
+			return;
+		}	
+		
+		
+		int min = Integer.MAX_VALUE;
+		int minNode = -1;
+		for (int i = 0; i < N; i++) {		
+
+			if((visited & (1<<i)) != 0) continue; //	이미 방문한 노드는 고려하지 않음
+			
+			if (W[curr][i] < min) { // 최소 비용, 최소로 만드는 정점 인덱스 저장하는 코드
+				min = W[curr][i];
+				minNode = i;
+			}
+		}
+		minCost1 += W[curr][minNode];
+		minCost2 += W2[curr][minNode];
+		shortest(visited | (1<<minNode),minNode);
+	}
+	@PostMapping("/oneway_2/{mode}")	
+	private OptPath configOptPathOneWay2(@PathVariable String mode, @RequestBody ConfigPathInput cpinput) throws IOException {
 
 		long startTime = System.currentTimeMillis();
 		
 		Map<String,Point> map = new HashMap<>();
-//		map.put(cpinput.getStart().getAddress(),cpinput.getStart());
+		map.put(cpinput.getStart().getAddress(),cpinput.getStart());
 		map.put(cpinput.getEnd().getAddress(),cpinput.getEnd());
 		
 		if(cpinput.getPointList()!= null) {
@@ -477,7 +713,7 @@ public class PathController {
 	public List<DetailDirection> path_detail(@RequestBody OptPath optpath) throws IOException {
 
 			String mode = optpath.getTravelMode();
-			String type = optpath.getRoundPathCriteria();
+			String type = optpath.getPathCriteria();
 			List<Point> path = optpath.getPointsInOrder();
 			// ============================= 상세 경로 저장 =============================
 
