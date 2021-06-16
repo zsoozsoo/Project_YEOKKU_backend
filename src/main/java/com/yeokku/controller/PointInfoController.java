@@ -1,38 +1,66 @@
 package com.yeokku.controller;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Properties;
+
+import javax.swing.plaf.basic.BasicInternalFrameTitlePane.MoveAction;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.yeokku.model.dto.City;
+import com.yeokku.model.dto.Country;
+import com.yeokku.model.dto.ScrapMovie;
+import com.yeokku.model.dto.ScrapMusic;
+
+import io.swagger.annotations.ApiOperation;
+
+
+//http://localhost:9999/vue/swagger-ui.html
 @RestController
 @RequestMapping("/pointinfo")
 @CrossOrigin("*")
+
 public class PointInfoController {
 	
 
-			
+	//영화 ( KMDB API 사용 )
 	@GetMapping("/movie/{nation}")
-	public void PointMovie(@PathVariable String nation) {
+	@ApiOperation("나라별 영화 종류 출력")
+	public String PointMovie(@PathVariable String nation) {
 		
 	        try {
+	        	List<ScrapMovie> movieList = new ArrayList<ScrapMovie>();
 	        	String API_KEY = "7Z770626Z954T1WCK808";
 	        	StringBuilder urlBuilder = new StringBuilder("http://api.koreafilm.or.kr/openapi-data2/wisenut/search_api/search_json2.jsp?collection=kmdb_new2");
+	        	urlBuilder.append("&listCount"+"="+10);
 	        	//서비스 키
 	        	urlBuilder.append("&"+URLEncoder.encode("ServiceKey","UTF-8")+"="+API_KEY);
 	        	//상영 국가
-	        	urlBuilder.append("&nation="+nation); 
+	        	urlBuilder.append("&detail="+"N"); 
+	        	urlBuilder.append("&nation"+"="+nation); 
 //	        	//상영년도
 //	        	urlBuilder.append("&" + URLEncoder.encode("val001","UTF-8") + "=" + URLEncoder.encode("2018", "UTF-8")); 
 //	        	//상영 월
@@ -69,73 +97,148 @@ public class PointInfoController {
 				JSONObject jsonObj = (JSONObject) jsonParse.parse(returnLine);
 				JSONArray dataArray = (JSONArray) jsonObj.get("Data");
 				JSONObject resultObject = (JSONObject) dataArray.get(0);
-				
 				//총 결과 수
 				long totalResult = (long) resultObject.get("TotalCount");
 				
-				System.out.println(totalResult);
+				
+				JSONArray resultArray = (JSONArray) resultObject.get("Result");
+				
+				for (int i = 0; i < 10; i++) {
+					JSONObject movieObject = (JSONObject) resultArray.get(i);
+					//순서대로 영화아이디, 영화제목, 개봉년도, 제작국가, 러닝타임, 관람등급, 장르, 상세정보 연결 url
+					String movieID = (String) movieObject.get("DOCID");
+					String movieTitle = (String) movieObject.get("title");
+					String prodYear = (String) movieObject.get("prodYear");
+					String movieNation = (String) movieObject.get("nation");
+					String runtime = (String) movieObject.get("runtime");
+					String rating = (String) movieObject.get("rating");
+					String genre = (String) movieObject.get("genre");
+					String infoUrl = (String) movieObject.get("kmdbUrl");
+					ScrapMovie scrapMovie = new ScrapMovie(movieID,movieTitle,prodYear,movieNation,runtime,rating,genre,infoUrl);
+					System.out.println(scrapMovie.toString());
+;				}
+				return returnLine;
+				
 	        } catch (Exception e) {
 	            e.printStackTrace();
 	        }
+			return null;
+	        
 		
 	}
+	 
+	//도서 ( 국립중앙도서관 API 사용 )
+//	@GetMapping("/book/{nation}")
+//	public void PointBook(@PathVariable String nation) {
+//		
+//	        try {
+//	        	String API_KEY = "";
+//	        	StringBuilder urlBuilder = new StringBuilder("https://www.nl.go.kr/NL/search/openApi/search.do?");
+//	        	//서비스 키
+//	        	urlBuilder.append(URLEncoder.encode("key","UTF-8")+"="+API_KEY);
+//	        	//상영 국가
+//	        	urlBuilder.append("&nation="+nation); 
+////	        	//상영년도
+////	        	urlBuilder.append("&" + URLEncoder.encode("val001","UTF-8") + "=" + URLEncoder.encode("2018", "UTF-8")); 
+////	        	//상영 월
+////	        	urlBuilder.append("&" + URLEncoder.encode("val002","UTF-8") + "=" + URLEncoder.encode("01", "UTF-8")); 
+//	      
+//	        	System.out.println(urlBuilder);
+//	        	URL url = new URL(urlBuilder.toString());
+//	            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+//	            conn.setRequestMethod("GET");
+//	            conn.setRequestProperty("Content-type", "application/json");
+//	            
+//	            System.out.println("Response code: " + conn.getResponseCode()); 
+//	            BufferedReader rd; 
+//	            if(conn.getResponseCode() >= 200 && conn.getResponseCode() <= 300) { 
+//	            	rd = new BufferedReader(new InputStreamReader(conn.getInputStream())); 
+//	            } else { 
+//	            	rd = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
+//	            } 
+//	            
+//	            StringBuilder sb = new StringBuilder(); 
+//	            String line; 
+//	            String returnLine;
+//	            while ((line = rd.readLine()) != null) {
+//	            	sb.append(line);
+//	            };
+//	            rd.close(); 
+//	            conn.disconnect(); 
+//	            
+//	            //최종 json
+//	            returnLine = sb.toString();
+//	            
+//	            // ----------- Json 파싱부분 -----------
+//	            JSONParser jsonParse = new JSONParser();
+//				JSONObject jsonObj = (JSONObject) jsonParse.parse(returnLine);
+//				JSONArray dataArray = (JSONArray) jsonObj.get("Data");
+//				JSONObject resultObject = (JSONObject) dataArray.get(0);
+//				
+//				//총 결과 수
+//				long totalResult = (long) resultObject.get("TotalCount");
+//				
+//				System.out.println(totalResult);
+//	        } catch (Exception e) {
+//	            e.printStackTrace();
+//	        }
+//		
+//	}
 	
-	@GetMapping("/book/{nation}")
-	public void PointBook(@PathVariable String nation) {
+	
+	// 음악 ( SPOTIFY CHART 크롤링 )
+	@GetMapping("/music/{nation}")
+	@ApiOperation("나라별 음악 데일리 TOP100 차트 출력")
+	private void PointMusic(@PathVariable String nation) throws SQLException, IOException {
 		
-	        try {
-	        	String API_KEY = "";
-	        	StringBuilder urlBuilder = new StringBuilder("https://www.nl.go.kr/NL/search/openApi/search.do?");
-	        	//서비스 키
-	        	urlBuilder.append(URLEncoder.encode("key","UTF-8")+"="+API_KEY);
-	        	//상영 국가
-	        	urlBuilder.append("&nation="+nation); 
-//	        	//상영년도
-//	        	urlBuilder.append("&" + URLEncoder.encode("val001","UTF-8") + "=" + URLEncoder.encode("2018", "UTF-8")); 
-//	        	//상영 월
-//	        	urlBuilder.append("&" + URLEncoder.encode("val002","UTF-8") + "=" + URLEncoder.encode("01", "UTF-8")); 
-	      
-	        	System.out.println(urlBuilder);
-	        	URL url = new URL(urlBuilder.toString());
-	            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-	            conn.setRequestMethod("GET");
-	            conn.setRequestProperty("Content-type", "application/json");
-	            
-	            System.out.println("Response code: " + conn.getResponseCode()); 
-	            BufferedReader rd; 
-	            if(conn.getResponseCode() >= 200 && conn.getResponseCode() <= 300) { 
-	            	rd = new BufferedReader(new InputStreamReader(conn.getInputStream())); 
-	            } else { 
-	            	rd = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
-	            } 
-	            
-	            StringBuilder sb = new StringBuilder(); 
-	            String line; 
-	            String returnLine;
-	            while ((line = rd.readLine()) != null) {
-	            	sb.append(line);
-	            };
-	            rd.close(); 
-	            conn.disconnect(); 
-	            
-	            //최종 json
-	            returnLine = sb.toString();
-	            
-	            // ----------- Json 파싱부분 -----------
-	            JSONParser jsonParse = new JSONParser();
-				JSONObject jsonObj = (JSONObject) jsonParse.parse(returnLine);
-				JSONArray dataArray = (JSONArray) jsonObj.get("Data");
-				JSONObject resultObject = (JSONObject) dataArray.get(0);
+			String url = "https://spotifycharts.com/regional/" +nation + "/daily/latest"	;
+//			url =  URLDecoder.decode(url, "euk-8");
+//			System.out.println("url: "+url);
+			Document doc = null;
+
+			try {
+				// 1. spotify chart 크롤링
+				doc = Jsoup.connect(url).get();
+			} catch(IOException e) {
+				e.printStackTrace();
+			}
+			
+			System.out.println(doc);
+			if(doc != null) {
+//				System.out.println("doc not null.");
+				Elements element = doc.select("tbody");
+				// 2. 노래 한곡의 정보들의 리스트 뽑아내기
+				Iterator<Element> musicGroups = element.select("tr").iterator();
 				
-				//총 결과 수
-				long totalResult = (long) resultObject.get("TotalCount");
+				// 3. 노래정보들 넣어줄 "ScrapMusic"객체의 리스트 생성
+				List<ScrapMusic> musicList = new ArrayList<>();
 				
-				System.out.println(totalResult);
-	        } catch (Exception e) {
-	            e.printStackTrace();
-	        }
-		
-	}
+				// 4. TOP 100개만 뽑아내기
+				for (int i = 0; i < 100; i++) {
+					
+					// 5. 1개의 곡 정보
+					Element songInfo = musicGroups.next();
+					
+					// 6. 노래제목, 가수 뽑기 ( Elements에 노래제목과 가수가 들어가 있음 )
+					Elements song = songInfo.select("td.chart-table-track");
+						// 노래제목, 가수
+					String songTitle = song.get(0).getElementsByTag("strong").text();
+					String singer = song.get(0).getElementsByTag("span").text();
+					 
+					// 7. 앨범 자켓 사진 링크 , 앨범 정보 링크 뽑기 ( Elements에 앨범 이미지 링크 앨범 정보 링크가 들어가 있음 )
+					Elements album = songInfo.select("td.chart-table-image");
+						// 앨범 이미지 링크, 앨범 상세정보 링크 (spotify사이트연결)
+					String albumImageLink = album.get(0).getElementsByTag("a").attr("href");
+					String albumInfoLink = album.get(0).getElementsByTag("img").attr("src");
+					
+					// 8. 노래 순위 뽑기
+					String rank = songInfo.select("td.chart-table-position").get(0).text();
+					
+					musicList.add(new ScrapMusic(songTitle, singer, albumImageLink, albumInfoLink, rank));
+				}
+				
+			}
+ 	}
 	
 	
 }
