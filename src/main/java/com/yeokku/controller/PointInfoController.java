@@ -8,6 +8,7 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -45,14 +46,17 @@ import io.swagger.annotations.ApiOperation;
 
 public class PointInfoController {
 	
-
+	//영화 검색 후 , 영화목록 들어올 영화리스트 전역변수
+	List<ScrapMovie> movieList;
+	
 	//영화 ( KMDB API 사용 )
 	@GetMapping("/movie/{nation}")
 	@ApiOperation("나라별 영화 종류 출력")
-	public String PointMovie(@PathVariable String nation) {
+	public List<ScrapMovie> PointMovie(@PathVariable String nation) {
+		
+		movieList = new ArrayList<ScrapMovie>();
 		
 	        try {
-	        	List<ScrapMovie> movieList = new ArrayList<ScrapMovie>();
 	        	String API_KEY = "7Z770626Z954T1WCK808";
 	        	StringBuilder urlBuilder = new StringBuilder("http://api.koreafilm.or.kr/openapi-data2/wisenut/search_api/search_json2.jsp?collection=kmdb_new2");
 	        	urlBuilder.append("&listCount"+"="+10);
@@ -114,18 +118,56 @@ public class PointInfoController {
 					String rating = (String) movieObject.get("rating");
 					String genre = (String) movieObject.get("genre");
 					String infoUrl = (String) movieObject.get("kmdbUrl");
-					ScrapMovie scrapMovie = new ScrapMovie(movieID,movieTitle,prodYear,movieNation,runtime,rating,genre,infoUrl);
-					System.out.println(scrapMovie.toString());
+					//감독
+					JSONObject directorsObject = (JSONObject) movieObject.get("directors");
+					JSONArray directorList = (JSONArray) directorsObject.get("director");
+					JSONObject director = (JSONObject) directorList.get(0);
+					String directorName = (String) director.get("directorNm");
+					
+					// 배우 목록 리스트
+					JSONObject actorObject = (JSONObject) movieObject.get("actors");
+					JSONArray actorsArr = (JSONArray) actorObject.get("actor");
+					List<String> actors = new ArrayList<>();
+					for (int j = 0; j < actorsArr.size(); j++) {
+						JSONObject actor = (JSONObject) actorsArr.get(j);
+						String actorName = (String) actor.get("actorNm");
+						actors.add(actorName);
+					}
+					
+					String company = (String) movieObject.get("company");
+					//영화 플롯
+					JSONObject plotsObject = (JSONObject) movieObject.get("plots");
+					JSONArray plotArr = (JSONArray) plotsObject.get("plot");
+					JSONObject plotObject = (JSONObject) plotArr.get(0);
+					String plot = (String) plotObject.get("plotText");
+
+					ScrapMovie scrapMovie = new ScrapMovie(movieID,movieTitle,prodYear,movieNation,runtime,rating,genre,infoUrl,directorName,actors,company,plot);
+					movieList.add(scrapMovie);
 ;				}
-				return returnLine;
 				
 	        } catch (Exception e) {
 	            e.printStackTrace();
 	        }
-			return null;
+	        
+			return movieList;
 	        
 		
 	}
+	
+	//영화 상세정보
+		@GetMapping("/movie/detail/{movieID}")
+		@ApiOperation("나라별 영화 종류 출력")
+		public ScrapMovie PointMovieDetail(@PathVariable String movieID) {
+			
+			for (int i = 0; i < movieList.size(); i++) {
+				if(movieList.get(i).getMovieID().equals(movieID)) {
+					ScrapMovie scrapMovie = movieList.get(i);
+					return scrapMovie;
+				}
+			}
+			return null;
+	
+		}
 	 
 	//도서 ( 국립중앙도서관 API 사용 )
 //	@GetMapping("/book/{nation}")
@@ -189,15 +231,17 @@ public class PointInfoController {
 	// 음악 ( SPOTIFY CHART 크롤링 )
 	@GetMapping("/music/{nation}")
 	@ApiOperation("나라별 음악 데일리 TOP100 차트 출력")
-	private void PointMusic(@PathVariable String nation) throws SQLException, IOException {
+	private List<ScrapMusic> PointMusic(@PathVariable String nation) throws SQLException, IOException {
 		
 			String url = "https://spotifycharts.com/regional/" +nation + "/daily/latest"	;
 //			url =  URLDecoder.decode(url, "euk-8");
 //			System.out.println("url: "+url);
 			Document doc = null;
+			// 1. 노래정보들 넣어줄 "ScrapMusic"객체의 리스트 생성
+			List<ScrapMusic> musicList = new ArrayList<>();
 
 			try {
-				// 1. spotify chart 크롤링
+				// 2. spotify chart 크롤링
 				doc = Jsoup.connect(url).get();
 			} catch(IOException e) {
 				e.printStackTrace();
@@ -207,11 +251,8 @@ public class PointInfoController {
 			if(doc != null) {
 //				System.out.println("doc not null.");
 				Elements element = doc.select("tbody");
-				// 2. 노래 한곡의 정보들의 리스트 뽑아내기
+				// 3. 노래 한곡의 정보들의 리스트 뽑아내기
 				Iterator<Element> musicGroups = element.select("tr").iterator();
-				
-				// 3. 노래정보들 넣어줄 "ScrapMusic"객체의 리스트 생성
-				List<ScrapMusic> musicList = new ArrayList<>();
 				
 				// 4. TOP 100개만 뽑아내기
 				for (int i = 0; i < 100; i++) {
@@ -238,6 +279,7 @@ public class PointInfoController {
 				}
 				
 			}
+			return musicList;
  	}
 	
 	
