@@ -1,5 +1,7 @@
 package com.yeokku.model.dto;
 
+import java.util.List;
+
 public class ScrapMovie {
 
 	private String movieID; //영화 구별 ID
@@ -10,6 +12,10 @@ public class ScrapMovie {
 	private String rating;
 	private String genre;
 	private String infoUrl;
+	private String director;
+	private List<String> actors;
+	private String company;
+	private String plot;
 	
 
 	public ScrapMovie() {
@@ -28,6 +34,25 @@ public class ScrapMovie {
 		this.rating = rating;
 		this.genre = genre;
 		this.infoUrl = infoUrl;
+	}
+	
+	
+
+	public ScrapMovie(String movieID, String movieTitle, String prodYear, String movieNation, String runtime,
+			String rating, String genre, String infoUrl, String director, List<String> actors, String company, String plot) {
+		super();
+		this.movieID = movieID;
+		this.movieTitle = movieTitle;
+		this.prodYear = prodYear;
+		this.movieNation = movieNation;
+		this.runtime = runtime;
+		this.rating = rating;
+		this.genre = genre;
+		this.infoUrl = infoUrl;
+		this.director = director;
+		this.actors = actors;
+		this.company = company;
+		this.plot = plot;
 	}
 
 	public String getMovieID() {
@@ -94,12 +119,48 @@ public class ScrapMovie {
 		this.infoUrl = infoUrl;
 	}
 
+	
+	public String getDirector() {
+		return director;
+	}
+
+	public void setDirector(String director) {
+		this.director = director;
+	}
+
+	public List<String> getActors() {
+		return actors;
+	}
+
+	public void setActors(List<String> actors) {
+		this.actors = actors;
+	}
+
+	public String getCompany() {
+		return company;
+	}
+
+	public void setCompany(String company) {
+		this.company = company;
+	}
+
+	public String getPlot() {
+		return plot;
+	}
+
+	public void setPlot(String plot) {
+		this.plot = plot;
+	}
+
 	@Override
 	public String toString() {
 		return "ScrapMovie [movieID=" + movieID + ", movieTitle=" + movieTitle + ", prodYear=" + prodYear
 				+ ", movieNation=" + movieNation + ", runtime=" + runtime + ", rating=" + rating + ", genre=" + genre
-				+ ", infoUrl=" + infoUrl + "]";
+				+ ", infoUrl=" + infoUrl + ", director=" + director + ", actors=" + actors.toString() + ", company=" + company
+				+ ", plot=" + plot + "]";
 	}
+
+	
 
 	
 	
