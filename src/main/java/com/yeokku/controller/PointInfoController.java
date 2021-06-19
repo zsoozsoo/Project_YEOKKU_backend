@@ -160,33 +160,33 @@ public class PointInfoController {
 			for (int i = 0; i < movieList.size(); i++) {
 				if(movieList.get(i).getMovieID().equals(movieID)) {
 					ScrapMovie scrapMovie = movieList.get(i);
-					String infoUrl = scrapMovie.getInfoUrl();
+					//String infoUrl = scrapMovie.getInfoUrl();
 					
-					// 상세정보 페이지 크롤링 ( 이미지 얻기 위해서 ) -----------------------
-					String url = infoUrl ;
-					Document doc = null;
-					
-					try {
-						// 2. spotify chart 크롤링
-						doc = Jsoup.connect(url).get();
-					} catch(IOException e) {
-						e.printStackTrace();
-					}
-					
-					if(doc != null) {
-						String imageUrl = "https://via.placeholder.com";
-						Elements element = doc.select("div.mImg1");
-						if(element==null) {
-							scrapMovie.setImageUrl(imageUrl);
-						}else {
-							Elements elements = element.select("span");
-							Element image = elements.get(0);
-							String attr = image.attr("style");
-							imageUrl = attr.substring( attr.indexOf("http://"), attr.indexOf("')") );
-							scrapMovie.setImageUrl(imageUrl);
-						}
-					}
-					// 크롤링 끝 ----------------------------------------------
+//					// 상세정보 페이지 크롤링 ( 이미지 얻기 위해서 ) -----------------------
+//					String url = infoUrl ;
+//					Document doc = null;
+//					
+//					try {
+//						// 2. spotify chart 크롤링
+//						doc = Jsoup.connect(url).get();
+//					} catch(IOException e) {
+//						e.printStackTrace();
+//					}
+//					
+//					if(doc != null) {
+//						String imageUrl = "https://via.placeholder.com";
+//						Elements element = doc.select("div.mImg1");
+//						if(element==null) {
+//							scrapMovie.setImageUrl(imageUrl);
+//						}else {
+//							Elements elements = element.select("span");
+//							Element image = elements.get(0);
+//							String attr = image.attr("style");
+//							imageUrl = attr.substring( attr.indexOf("http://"), attr.indexOf("')") );
+//							scrapMovie.setImageUrl(imageUrl);
+//						}
+//					}
+//					// 크롤링 끝 ----------------------------------------------
 					
 					
 					return scrapMovie;
