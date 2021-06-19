@@ -174,16 +174,17 @@ public class PointInfoController {
 					}
 					
 					if(doc != null) {
-						Elements element = doc.select("div.mImg1");
-						Elements elements = element.select("span");
-						Element image = elements.get(0);
-						String attr = image.attr("style");
 						String imageUrl = "https://via.placeholder.com";
-						
-						if(attr!=null) {
+						Elements element = doc.select("div.mImg1");
+						if(element==null) {
+							scrapMovie.setImageUrl(imageUrl);
+						}else {
+							Elements elements = element.select("span");
+							Element image = elements.get(0);
+							String attr = image.attr("style");
 							imageUrl = attr.substring( attr.indexOf("http://"), attr.indexOf("')") );
+							scrapMovie.setImageUrl(imageUrl);
 						}
-						scrapMovie.setImageUrl(imageUrl);
 					}
 					// 크롤링 끝 ----------------------------------------------
 					
