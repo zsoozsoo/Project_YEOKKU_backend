@@ -157,41 +157,52 @@ public class PointInfoController {
 		@ApiOperation("나라별 영화 종류 출력")
 		public ScrapMovie PointMovieDetail(@PathVariable String movieID) {
 			
-			for (int i = 0; i < movieList.size(); i++) {
-				if(movieList.get(i).getMovieID().equals(movieID)) {
-					ScrapMovie scrapMovie = movieList.get(i);
-					//String infoUrl = scrapMovie.getInfoUrl();
+			boolean check = false; // movieList에 검색한 영화가 있는지 없는지 확인하기 위한 변수
+			
+			if(movieList.size()==0) System.out.println("데이터가 들어오지 않았습니다.");
+			else {
+				for (int i = 0; i < movieList.size(); i++) {
 					
-//					// 상세정보 페이지 크롤링 ( 이미지 얻기 위해서 ) -----------------------
-//					String url = infoUrl ;
-//					Document doc = null;
-//					
-//					try {
-//						// 2. spotify chart 크롤링
-//						doc = Jsoup.connect(url).get();
-//					} catch(IOException e) {
-//						e.printStackTrace();
-//					}
-//					
-//					if(doc != null) {
-//						String imageUrl = "https://via.placeholder.com";
-//						Elements element = doc.select("div.mImg1");
-//						if(element==null) {
-//							scrapMovie.setImageUrl(imageUrl);
-//						}else {
-//							Elements elements = element.select("span");
-//							Element image = elements.get(0);
-//							String attr = image.attr("style");
-//							imageUrl = attr.substring( attr.indexOf("http://"), attr.indexOf("')") );
-//							scrapMovie.setImageUrl(imageUrl);
-//						}
-//					}
-//					// 크롤링 끝 ----------------------------------------------
-					
-					
-					return scrapMovie;
+					if(movieList.get(i).getMovieID().equals(movieID)) {
+						check = true;
+						ScrapMovie scrapMovie = movieList.get(i);
+						String infoUrl = scrapMovie.getInfoUrl();
+						
+						// 상세정보 페이지 크롤링 ( 이미지 얻기 위해서 ) -----------------------
+						String url = infoUrl ;
+						Document doc = null;
+						try {
+							doc = Jsoup.connect(url).get();
+						} catch(IOException e) {
+							e.printStackTrace();
+						}
+						
+						if(doc != null) {
+							//기본값이 이미지 없을때로
+							String imageUrl = "https://via.placeholder.com";
+							
+							Elements element = doc.select("div.mImg1");
+							Elements elements = element.select("span");
+							Element image = elements.get(0);
+							String attr = image.attr("style");
+							
+							//이미지가 있을 때 ( http://로 시작하는 이미지 주소를 갖고있을 때 )
+							if(attr.indexOf("http://")>0) {
+								imageUrl = attr.substring( attr.indexOf("http://"), attr.indexOf("')") );
+							}
+							
+							//이미지 없는 경우 기본값으로 set!
+							scrapMovie.setImageUrl(imageUrl);
+							
+						}
+						// 크롤링 끝 ----------------------------------------------
+						
+						return scrapMovie;
+					}
+										
 				}
 			}
+			
 			return null;
 	
 		}
