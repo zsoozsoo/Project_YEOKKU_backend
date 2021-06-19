@@ -16,27 +16,13 @@ public class ScrapMovie {
 	private List<String> actors;
 	private String company;
 	private String plot;
+	private String imageUrl;
 	
 
 	public ScrapMovie() {
 		super();
 		
 	}
-	
-	public ScrapMovie(String movieID, String movieTitle, String prodYear, String movieNation, String runtime,
-			String rating, String genre, String infoUrl) {
-		super();
-		this.movieID = movieID;
-		this.movieTitle = movieTitle;
-		this.prodYear = prodYear;
-		this.movieNation = movieNation;
-		this.runtime = runtime;
-		this.rating = rating;
-		this.genre = genre;
-		this.infoUrl = infoUrl;
-	}
-	
-	
 
 	public ScrapMovie(String movieID, String movieTitle, String prodYear, String movieNation, String runtime,
 			String rating, String genre, String infoUrl, String director, List<String> actors, String company, String plot) {
@@ -53,6 +39,27 @@ public class ScrapMovie {
 		this.actors = actors;
 		this.company = company;
 		this.plot = plot;
+	}
+	
+	
+
+	public ScrapMovie(String movieID, String movieTitle, String prodYear, String movieNation, String runtime,
+			String rating, String genre, String infoUrl, String director, List<String> actors, String company,
+			String plot, String imageUrl) {
+		super();
+		this.movieID = movieID;
+		this.movieTitle = movieTitle;
+		this.prodYear = prodYear;
+		this.movieNation = movieNation;
+		this.runtime = runtime;
+		this.rating = rating;
+		this.genre = genre;
+		this.infoUrl = infoUrl;
+		this.director = director;
+		this.actors = actors;
+		this.company = company;
+		this.plot = plot;
+		this.imageUrl = imageUrl;
 	}
 
 	public String getMovieID() {
@@ -151,15 +158,26 @@ public class ScrapMovie {
 	public void setPlot(String plot) {
 		this.plot = plot;
 	}
+	
+	
+
+	public String getImageUrl() {
+		return imageUrl;
+	}
+
+	public void setImageUrl(String imageUrl) {
+		this.imageUrl = imageUrl;
+	}
 
 	@Override
 	public String toString() {
 		return "ScrapMovie [movieID=" + movieID + ", movieTitle=" + movieTitle + ", prodYear=" + prodYear
 				+ ", movieNation=" + movieNation + ", runtime=" + runtime + ", rating=" + rating + ", genre=" + genre
-				+ ", infoUrl=" + infoUrl + ", director=" + director + ", actors=" + actors.toString() + ", company=" + company
-				+ ", plot=" + plot + "]";
+				+ ", infoUrl=" + infoUrl + ", director=" + director + ", actors=" + actors + ", company=" + company
+				+ ", plot=" + plot + ", imageUrl=" + imageUrl + "]";
 	}
 
+	
 	
 
 	
