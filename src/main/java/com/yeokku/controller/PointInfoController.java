@@ -178,7 +178,11 @@ public class PointInfoController {
 						Elements elements = element.select("span");
 						Element image = elements.get(0);
 						String attr = image.attr("style");
-						String imageUrl = attr.substring( attr.indexOf("http://"), attr.indexOf("')") );
+						String imageUrl = "https://via.placeholder.com";
+						
+						if(attr!=null) {
+							imageUrl = attr.substring( attr.indexOf("http://"), attr.indexOf("')") );
+						}
 						scrapMovie.setImageUrl(imageUrl);
 					}
 					// 크롤링 끝 ----------------------------------------------
