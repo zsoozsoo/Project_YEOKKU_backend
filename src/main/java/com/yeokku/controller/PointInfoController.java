@@ -8,10 +8,8 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Properties;
 
 import javax.swing.plaf.basic.BasicInternalFrameTitlePane.MoveAction;
 
@@ -154,7 +152,7 @@ public class PointInfoController {
 		
 	}
 	
-	//영화 상세정보
+	//영화 상세정보 ( movie detail )
 		@GetMapping("/movie/detail/{movieID}")
 		@ApiOperation("나라별 영화 종류 출력")
 		public ScrapMovie PointMovieDetail(@PathVariable String movieID) {
@@ -162,70 +160,36 @@ public class PointInfoController {
 			for (int i = 0; i < movieList.size(); i++) {
 				if(movieList.get(i).getMovieID().equals(movieID)) {
 					ScrapMovie scrapMovie = movieList.get(i);
+					String infoUrl = scrapMovie.getInfoUrl();
+					
+					// 상세정보 페이지 크롤링 ( 이미지 얻기 위해서 ) -----------------------
+					String url = infoUrl ;
+					Document doc = null;
+					
+					try {
+						// 2. spotify chart 크롤링
+						doc = Jsoup.connect(url).get();
+					} catch(IOException e) {
+						e.printStackTrace();
+					}
+					
+					if(doc != null) {
+						Elements element = doc.select("div.mImg1");
+						Elements elements = element.select("span");
+						Element image = elements.get(0);
+						String attr = image.attr("style");
+						String imageUrl = attr.substring( attr.indexOf("http://"), attr.indexOf("')") );
+						scrapMovie.setImageUrl(imageUrl);
+					}
+					// 크롤링 끝 ----------------------------------------------
+					
+					
 					return scrapMovie;
 				}
 			}
 			return null;
 	
 		}
-	 
-	//도서 ( 국립중앙도서관 API 사용 )
-//	@GetMapping("/book/{nation}")
-//	public void PointBook(@PathVariable String nation) {
-//		
-//	        try {
-//	        	String API_KEY = "";
-//	        	StringBuilder urlBuilder = new StringBuilder("https://www.nl.go.kr/NL/search/openApi/search.do?");
-//	        	//서비스 키
-//	        	urlBuilder.append(URLEncoder.encode("key","UTF-8")+"="+API_KEY);
-//	        	//상영 국가
-//	        	urlBuilder.append("&nation="+nation); 
-////	        	//상영년도
-////	        	urlBuilder.append("&" + URLEncoder.encode("val001","UTF-8") + "=" + URLEncoder.encode("2018", "UTF-8")); 
-////	        	//상영 월
-////	        	urlBuilder.append("&" + URLEncoder.encode("val002","UTF-8") + "=" + URLEncoder.encode("01", "UTF-8")); 
-//	      
-//	        	System.out.println(urlBuilder);
-//	        	URL url = new URL(urlBuilder.toString());
-//	            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-//	            conn.setRequestMethod("GET");
-//	            conn.setRequestProperty("Content-type", "application/json");
-//	            
-//	            System.out.println("Response code: " + conn.getResponseCode()); 
-//	            BufferedReader rd; 
-//	            if(conn.getResponseCode() >= 200 && conn.getResponseCode() <= 300) { 
-//	            	rd = new BufferedReader(new InputStreamReader(conn.getInputStream())); 
-//	            } else { 
-//	            	rd = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
-//	            } 
-//	            
-//	            StringBuilder sb = new StringBuilder(); 
-//	            String line; 
-//	            String returnLine;
-//	            while ((line = rd.readLine()) != null) {
-//	            	sb.append(line);
-//	            };
-//	            rd.close(); 
-//	            conn.disconnect(); 
-//	            
-//	            //최종 json
-//	            returnLine = sb.toString();
-//	            
-//	            // ----------- Json 파싱부분 -----------
-//	            JSONParser jsonParse = new JSONParser();
-//				JSONObject jsonObj = (JSONObject) jsonParse.parse(returnLine);
-//				JSONArray dataArray = (JSONArray) jsonObj.get("Data");
-//				JSONObject resultObject = (JSONObject) dataArray.get(0);
-//				
-//				//총 결과 수
-//				long totalResult = (long) resultObject.get("TotalCount");
-//				
-//				System.out.println(totalResult);
-//	        } catch (Exception e) {
-//	            e.printStackTrace();
-//	        }
-//		
-//	}
 	
 	
 	// 음악 ( SPOTIFY CHART 크롤링 )
@@ -247,7 +211,7 @@ public class PointInfoController {
 				e.printStackTrace();
 			}
 			
-			System.out.println(doc);
+			//System.out.println(doc);
 			if(doc != null) {
 //				System.out.println("doc not null.");
 				Elements element = doc.select("tbody");
