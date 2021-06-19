@@ -147,6 +147,7 @@ public class PointInfoController {
 	            e.printStackTrace();
 	        }
 	        
+	        
 			return movieList;
 	        
 		
