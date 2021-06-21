@@ -180,7 +180,7 @@ public class PointInfoController {
 						
 						if(doc != null) {
 							//기본값이 이미지 없을때로
-							String imageUrl = "https://via.placeholder.com";
+							String imageUrl = null;
 							
 							Elements element = doc.select("div.mImg1");
 							Elements elements = element.select("span");
