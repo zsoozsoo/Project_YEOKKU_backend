@@ -16,7 +16,7 @@ import com.yeokku.model.dto.City;
 import com.yeokku.model.dto.Country;
 import com.yeokku.model.dto.Point;
 
-@CrossOrigin
+@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/select")
 public class SelectRestController {

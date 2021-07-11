@@ -105,7 +105,7 @@ public class PointInfoController {
 				
 				JSONArray resultArray = (JSONArray) resultObject.get("Result");
 				
-				for (int i = 0; i < 10; i++) {
+				for (int i = 0; i < resultArray.size(); i++) {
 					JSONObject movieObject = (JSONObject) resultArray.get(i);
 					//순서대로 영화아이디, 영화제목, 개봉년도, 제작국가, 러닝타임, 관람등급, 장르, 상세정보 연결 url
 					String movieID = (String) movieObject.get("DOCID");
