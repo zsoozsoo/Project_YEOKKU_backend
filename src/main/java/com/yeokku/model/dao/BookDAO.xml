@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+    
+<mapper namespace="com.yeokku.model.dao.BookDAO">
+
+	<resultMap type="Book" id="BookResultMap">
+		<id column="isbn" property="isbn"/>
+		<result column="kwd" property="kwd"/>
+		<result column="category" property="category"/>
+		<result column="pageNum" property="pageNum"/>
+		<result column="pageSize" property="pageSize"/>
+		<result column="sort" property="sort"/>
+		<result column="total" property="total"/>
+		<result column="Id" property="Id"/>
+		<result column="kdc_code_1s" property="kdc_code_1s"/>
+		<result column="title_info" property="title_info"/>
+		<result column="author_info" property="author_info"/>
+		<result column="pub_info" property="pub_info"/>
+		<result column="exp_date" property="exp_date"/>
+		<result column="cover_yn" property="cover_yn"/>
+		<result column="thumb_path" property="thumb_path"/>
+		<result column="thumb_file_name" property="thumb_file_name"/>
+		<result column="img_path" property="img_path"/>
+		<result column="detail_path" property="detail_path"/>
+		<result column="price" property="price"/>
+		<result column="currency_code" property="currency_code"/>
+		<result column="title_page_yn" property="title_page_yn"/>
+		<result column="copyright_page_yn" property="copyright_page_yn"/>
+		<result column="author_yn" property="author_yn"/>
+		<result column="preface_yn" property="preface_yn"/>
+		<result column="contents_yn" property="contents_yn"/>
+		<result column="abstract_yn" property="abstract_yn"/>
+		<result column="text_yn" property="text_yn"/>
+		<result column="etc_yn" property="etc_yn"/>
+		<result column="publisher_key" property="publisher_key"/>
+		<result column="ea_add_code" property="ea_add_code"/>
+	</resultMap>
+	
+	<insert id="insertAllBooks" parameterType="Book">
+		insert into city 
+			(isbn,kwd,category,pageNum,pageSize,sort,total,Id,kdc_code_1s,title_info,author_info,
+			pub_info,exp_date,cover_yn,thumb_path,thumb_file_name,img_path,detail_path,price
+			,currency_code,title_page_yn,copyright_page_yn,author_yn,preface_yn,contents_yn,
+			abstract_yn,text_yn,etc_yn,publisher_key,ea_add_code)
+		values
+		<foreach collection="bookList" item="item" separator=",">
+			(
+				#{item.isbn},#{item.kwd},#{item.category},#{item.pageNum},#{item.pageSize},
+				#{item.sort},#{item.total},#{item.Id},#{item.kdc_code_1s},#{item.title_info},
+				#{item.author_info},#{item.pub_info},#{item.exp_date},#{item.cover_yn},#{item.thumb_path},
+				#{item.thumb_file_name},#{item.img_path},#{item.detail_path},#{item.price},#{item.currency_code},
+				#{item.title_page_yn},#{item.copyright_page_yn},#{item.author_yn},#{item.preface_yn},#{item.contents_yn},
+				#{item.abstract_yn},#{item.text_yn},#{item.etc_yn},#{item.publisher_key},#{item.ea_add_code}
+			)
+		</foreach>
+	</insert>
+	
+	<select id="selectBookList"  resultMap="BookResultMap">
+		isbn,kwd,category,pageNum,pageSize,sort,total,Id,kdc_code_1s,title_info,author_info,
+			pub_info,exp_date,cover_yn,thumb_path,thumb_file_name,img_path,detail_path,price
+			,currency_code,title_page_yn,copyright_page_yn,author_yn,preface_yn,contents_yn,
+			abstract_yn,text_yn,etc_yn,publisher_key,ea_add_code
+		from book;
+	</select>	
+		
+	<select id="selectBookListByCountry"  resultMap="BookResultMap" parameterType="string">
+		select isbn,kwd,category,pageNum,pageSize,sort,total,Id,kdc_code_1s,title_info,author_info,
+			pub_info,exp_date,cover_yn,thumb_path,thumb_file_name,img_path,detail_path,price
+			,currency_code,title_page_yn,copyright_page_yn,author_yn,preface_yn,contents_yn,
+			abstract_yn,text_yn,etc_yn,publisher_key,ea_add_code
+		from book
+		where cnt_name like concat('%',#{countryName},'%');
+	</select>	
+	
+</mapper>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
