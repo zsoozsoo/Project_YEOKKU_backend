@@ -125,7 +125,7 @@ public class PathController {
 				Point origin = input.get(i);
 				Point dest = input.get(j);
 
-				final String SERVICE_KEY = "AIzaSyC6HRafHB4tQDc-GSCPbwTnybYJLNybxDw";
+				final String SERVICE_KEY = "AIzaSyCt4KmDVjM1tPcZlSZPu_QmY7GvFVP5vQI";
 				String urlStr = "https://maps.googleapis.com/maps/api/distancematrix/json?mode=" + mode + "&origins="
 						+ origin.getAddress().replace(" ","+") + "&destinations=" + dest.getAddress() .replace(" ","+")
 						+ "&key=" + SERVICE_KEY;
@@ -313,7 +313,7 @@ public class PathController {
 			}
 		}
 		
-		final String SERVICE_KEY = "AIzaSyC6HRafHB4tQDc-GSCPbwTnybYJLNybxDw";
+		final String SERVICE_KEY = "AIzaSyCt4KmDVjM1tPcZlSZPu_QmY7GvFVP5vQI";
 		
 		String urlStr = "https://maps.googleapis.com/maps/api/directions/json?"
 //				+ "&origin=" + cpinput.getStart().getLat() + "," + cpinput.getStart().getLng()
@@ -497,7 +497,7 @@ public class PathController {
 				Point origin = input.get(i);
 				Point dest = input.get(j);
 
-				final String SERVICE_KEY = "AIzaSyC6HRafHB4tQDc-GSCPbwTnybYJLNybxDw";
+				final String SERVICE_KEY = "AIzaSyCt4KmDVjM1tPcZlSZPu_QmY7GvFVP5vQI";
 				String urlStr = "https://maps.googleapis.com/maps/api/distancematrix/json?mode=" + mode + "&origins="
 						+ origin.getAddress().replace(" ","+") + "&destinations=" + dest.getAddress() .replace(" ","+")
 						+ "&key=" + SERVICE_KEY;
@@ -730,7 +730,7 @@ public class PathController {
 				else next =  path.get(i+1);
 
 				// google direction api 로 상세정보
-				final String SERVICE_KEY = "AIzaSyC6HRafHB4tQDc-GSCPbwTnybYJLNybxDw";
+				final String SERVICE_KEY = "AIzaSyCt4KmDVjM1tPcZlSZPu_QmY7GvFVP5vQI";
 				String urlStr = "https://maps.googleapis.com/maps/api/directions/json?language=ko&mode=" + mode + "&origin="
 							+ curr.getAddress().replace(" ","+") + "&destination=" + next.getAddress().replace(" ","+")
 							+ "&key=" + SERVICE_KEY;
