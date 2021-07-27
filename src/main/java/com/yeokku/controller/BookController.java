@@ -4,33 +4,33 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
-import java.util.List;
+import java.net.URLEncoder;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.yeokku.model.dto.Book;
-
 @RestController
-@RequestMapping("/book")
+@RequestMapping("/pointinfo")
 @CrossOrigin("*")
 public class BookController {
 
 	private final String apiKey = "c747ae14f1a86c0cb8501feeeadfac48aac79fe0bf861740785adff5b72703e8";
 	
-	@PostMapping("/{country}")
+	@GetMapping("/book/{country}")
 	public JSONArray getBookList(@PathVariable String country)
 			throws IOException {
-		
-		String urlStr = "https://www.nl.go.kr/NL/search/openApi/cip.do?key=" + apiKey +"&kwd=" + country + "&apiType=json";
+
+		String urlStr = "https://www.nl.go.kr/NL/search/openApi/cip.do?key=" + apiKey +"&kwd=" + URLEncoder.encode(country, "utf-8") + "&apiType=json";
 		JSONArray resultArray = null;
+		System.out.println(urlStr);
+		
 		try { // json 파싱
 			URL url = new URL(urlStr);
 			String line = "";
