@@ -13,8 +13,11 @@ import org.json.simple.parser.ParseException;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.yeokku.model.dto.Book;
 
 @RestController
 @RequestMapping("/pointinfo")
@@ -57,6 +60,36 @@ public class BookController {
 		}
 		
 		return resultArray;
+	}
+	
+	@GetMapping("/book/detail")
+	public JSONObject getBookByIsbn(@RequestBody Book bookInput)
+			throws IOException {
+
+		String urlStr = "https://www.nl.go.kr/NL/search/openApi/cip.do?key=" + apiKey +"&kwd=" + URLEncoder.encode(bookInput.getTitle_info(), "utf-8") + "&apiType=json";
+		JSONArray resultArray = null;
+		System.out.println(urlStr);
+		
+		try { // json 파싱
+			URL url = new URL(urlStr);
+			String line = "";
+			String response = "";
+
+			BufferedReader br;
+			br = new BufferedReader(new InputStreamReader(url.openStream()));
+			while ((line = br.readLine()) != null) {
+				response = response.concat(line);
+			}
+
+			JSONParser jsonParse = new JSONParser();
+			JSONObject jsonObj = (JSONObject) jsonParse.parse(response);
+			resultArray = (JSONArray) jsonObj.get("result");
+
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+		
+		return (JSONObject) resultArray.get(0);
 	}
 	
 }
